@@ -683,6 +683,27 @@ int sys_vm_map(void *hint, size_t size, int prot, int flags, int fd, off_t offse
     }
 }
 
+int sys_vm_protect(void *pointer, size_t size, int prot)
+{
+    unsigned prot_flags = 0;
+    if ((prot & PROT_READ) && (~prot & PROT_WRITE))
+        prot_flags |= OBOS_PROTECTION_READ_ONLY;
+    if (prot & PROT_EXEC)
+        prot_flags |= OBOS_PROTECTION_EXECUTABLE;
+
+    obos_status status = (obos_status)syscall4(Sys_VirtualMemoryProtect, HANDLE_CURRENT, pointer, size, prot_flags);
+    switch (status)
+    {
+        case OBOS_STATUS_SUCCESS: return 0;
+        case OBOS_STATUS_INVALID_ARGUMENT: return EINVAL;
+        case OBOS_STATUS_IN_USE: return EEXIST;
+        case OBOS_STATUS_UNINITIALIZED: return EACCES;
+        case OBOS_STATUS_NOT_ENOUGH_MEMORY: return ENOMEM;
+        case OBOS_STATUS_NOT_FOUND: return EINVAL;
+        default: return ENOSYS;
+    }   
+}
+
 int sys_vm_unmap(void *pointer, size_t size)
 {
     return sys_anon_free(pointer, size);
