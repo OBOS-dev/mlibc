@@ -88,6 +88,12 @@ int sys_sigaction(int sigval, const struct sigaction *__restrict newact_mlibc,
 
 #endif
 
+int sys_setpgid(pid_t pid, pid_t pgid)
+{
+	(void)(pid,pgid);
+	return 0;
+}
+
 int sys_sigaltstack(const stack_t *ss, stack_t *oss)
 {
     // stack_t is the same on obos and on Linux (the abi we "borrow" from)
