@@ -95,6 +95,11 @@ enum {
     Sys_GetControllingTTY,
     Sys_TTYName,
     Sys_IsATTY,
+    Sys_IRPWait,
+    Sys_IRPQueryState,
+    Sys_IRPGetBuffer,
+    Sys_IRPGetStatus,
+    Sys_CreatePipe,
 };
 
 #ifdef __cplusplus

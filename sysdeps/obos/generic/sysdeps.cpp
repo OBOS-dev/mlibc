@@ -409,6 +409,12 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result)
     return res;
 }
 
+int sys_pipe(int *fds, int flags)
+{
+	(void)flags;
+	return parse_file_status((obos_status)syscall2(Sys_CreatePipe, fds, 0));
+}
+
 int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
 {
     (void)mode;
