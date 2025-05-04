@@ -88,6 +88,18 @@ int sys_sigaction(int sigval, const struct sigaction *__restrict newact_mlibc,
 
 #endif
 
+int sys_dup(int fd, int flags, int *newfd)
+{
+	(void)flags;
+	*newfd = HANDLE_ANY;
+	return parse_file_status((obos_status)syscall2(Sys_HandleClone, fd, newfd));
+}
+int sys_dup2(int fd, int flags, int newfd)
+{
+        (void)flags;
+        return parse_file_status((obos_status)syscall2(Sys_HandleClone, fd, &newfd));
+}
+
 int sys_setpgid(pid_t pid, pid_t pgid)
 {
 	(void)(pid,pgid);
