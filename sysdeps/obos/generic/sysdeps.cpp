@@ -221,7 +221,10 @@ pid_t sys_getppid()
 // TODO: Progress group IDs
 int sys_getpgid(pid_t pid, pid_t* pgid)
 {
-    *pgid = pid;
+    if (pid)
+        *pgid = pid;
+    else
+        *pgid = sys_getpid();
     return 0;
 }
 
