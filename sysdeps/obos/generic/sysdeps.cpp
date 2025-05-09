@@ -356,11 +356,23 @@ int sys_read_entries(int handle, void *buffer, size_t max_size, size_t *bytes_re
     return parse_file_status((obos_status)syscall4(Sys_ReadEntries, handle, buffer, max_size, bytes_read));
 }
 
+/*
 int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events)
 {
     (void)(num_fds && read_set && write_set && except_set && timeout && sigmask);
     *num_events = 1;
     return 0;
+}*/
+
+int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events)
+{
+	struct pselect_extra_args
+	{
+    		const uintptr_t* timeout;
+    		const sigset_t* sigmask;
+    		int* num_events;
+	} extra = {.timeout=nullptr,.sigmask=sigmask,.num_events=num_events};
+	return parse_file_status((obos_status)syscall5(Sys_PSelect, num_fds, read_set, write_set, except_set, &extra));
 }
 
 int sys_isatty(int fd)

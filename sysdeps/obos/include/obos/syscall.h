@@ -100,6 +100,7 @@ enum {
     Sys_IRPGetBuffer,
     Sys_IRPGetStatus,
     Sys_CreatePipe,
+    Sys_PSelect,
 };
 
 #ifdef __cplusplus
