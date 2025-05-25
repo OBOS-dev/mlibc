@@ -15,6 +15,11 @@ struct Guard {
 	static constexpr int32_t locked = 1;
 
 	void lock() {
+#ifdef __obos__
+		// This is here because of a weird bug with __cxa_guard_acquire contention bugs.
+		// TODO: Actually fix the bug?
+		volatile char str[17] = {};
+#endif
 		uint32_t v = 0;
 		if(__atomic_compare_exchange_n(&mutex, &v, Guard::locked, false,
 				__ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
