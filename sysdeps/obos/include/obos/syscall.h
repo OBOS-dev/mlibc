@@ -101,6 +101,7 @@ enum {
     Sys_IRPGetStatus,
     Sys_CreatePipe,
     Sys_PSelect,
+    Sys_ReadLinkAt,
 };
 
 #ifdef __cplusplus
