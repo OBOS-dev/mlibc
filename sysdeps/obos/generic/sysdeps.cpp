@@ -541,11 +541,11 @@ int sys_faccessat(int dirfd, const char *pathname, int mode, int flags)
     return access_common(&st, mode);
 }
 
-int sys_readlinkat(int dirfd, const char* path, void* buffer, size_t size, size_t *read)
+int sys_readlinkat(int dirfd, const char* path, void* buffer, size_t size, ssize_t *read)
 {
     return parse_file_status((obos_status)syscall5(Sys_ReadLinkAt, dirfd, path, buffer, size, read));
 }
-int sys_readlink(const char* path, void* buffer, size_t size, size_t *read)
+int sys_readlink(const char* path, void* buffer, size_t size, ssize_t *read)
 {
     return parse_file_status((obos_status)syscall5(Sys_ReadLinkAt, AT_FDCWD, path, buffer, size, read));
 }
