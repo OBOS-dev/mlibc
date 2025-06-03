@@ -203,7 +203,7 @@ uid_t sys_geteuid()
 
 gid_t sys_getgid()
 { return (gid_t)syscall0(Sys_GetGid); }
-gid_t sys_getegid() { return sys_getegid(); }
+gid_t sys_getegid() { return sys_getgid(); }
 
 int sys_setuid(uid_t uid)
 {
