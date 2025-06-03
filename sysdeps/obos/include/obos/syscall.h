@@ -102,6 +102,10 @@ enum {
     Sys_CreatePipe,
     Sys_PSelect,
     Sys_ReadLinkAt,
+    Sys_SetUid,
+    Sys_SetGid,
+    Sys_GetUid,
+    Sys_GetGid,
 };
 
 #ifdef __cplusplus

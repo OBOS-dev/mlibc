@@ -197,13 +197,36 @@ void sys_libc_log(char const* str)
 }
 
 uid_t sys_getuid()
-{ return 0; }
+{ return (uid_t)syscall0(Sys_GetUid); }
 uid_t sys_geteuid()
-{ return 0; }
+{ return sys_getuid(); }
 
 gid_t sys_getgid()
-{ return 0; }
-gid_t sys_getegid() { return 0; }
+{ return (gid_t)syscall0(Sys_GetGid); }
+gid_t sys_getegid() { return sys_getegid(); }
+
+int sys_setuid(uid_t uid)
+{
+    // This can only return OBOS_STATUS_ACCESS_DENIED
+    obos_status status = (obos_status)syscall1(Sys_SetUid, uid);
+    switch (status)
+    {
+        case OBOS_STATUS_ACCESS_DENIED: return EPERM;
+        default: return EINVAL; // idk
+    }
+    return 0;
+}
+int sys_setgid(gid_t gid)
+{
+    // This can only return OBOS_STATUS_ACCESS_DENIED
+    obos_status status = (obos_status)syscall1(Sys_SetGid, gid);
+    switch (status)
+    {
+        case OBOS_STATUS_ACCESS_DENIED: return EPERM;
+        default: return EINVAL; // idk
+    }
+    return 0;
+}
 
 pid_t sys_gettid()
 {
