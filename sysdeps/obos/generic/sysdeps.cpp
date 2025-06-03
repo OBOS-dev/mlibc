@@ -212,9 +212,9 @@ int sys_setuid(uid_t uid)
     switch (status)
     {
         case OBOS_STATUS_ACCESS_DENIED: return EPERM;
+        case OBOS_STATUS_SUCCESS: return 0;
         default: return EINVAL; // idk
     }
-    return 0;
 }
 int sys_setgid(gid_t gid)
 {
@@ -223,6 +223,7 @@ int sys_setgid(gid_t gid)
     switch (status)
     {
         case OBOS_STATUS_ACCESS_DENIED: return EPERM;
+        case OBOS_STATUS_SUCCESS: return 0;
         default: return EINVAL; // idk
     }
     return 0;
