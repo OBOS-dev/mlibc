@@ -390,12 +390,13 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
 
 int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except_set, const struct timespec *timeout, const sigset_t *sigmask, int *num_events)
 {
+    uintptr_t tm = timeout ? timeout->tv_nsec/1000 : UINTPTR_MAX;
 	struct pselect_extra_args
 	{
     		const uintptr_t* timeout;
     		const sigset_t* sigmask;
     		int* num_events;
-	} extra = {.timeout=nullptr,.sigmask=sigmask,.num_events=num_events};
+	} extra = {.timeout=(tm != UINTPTR_MAX ? &tm : nullptr),.sigmask=sigmask,.num_events=num_events};
 	return parse_file_status((obos_status)syscall5(Sys_PSelect, num_fds, read_set, write_set, except_set, &extra));
 }
 
