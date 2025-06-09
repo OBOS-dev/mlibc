@@ -106,6 +106,7 @@ enum {
     Sys_SetGid,
     Sys_GetUid,
     Sys_GetGid,
+    Sys_UnlinkAt
 };
 
 #ifdef __cplusplus

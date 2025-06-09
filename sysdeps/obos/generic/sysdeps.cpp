@@ -584,6 +584,11 @@ int sys_mkdirat(int dirfd, const char *path, mode_t mode)
     return parse_file_status((obos_status)syscall3(Sys_MkdirAt, (handle)dirfd, path, mode));
 }
 
+int sys_unlinkat(int dirfd, const char* path, int flags)
+{
+    return parse_file_status((obos_status)syscall3(Sys_UnlinkAt, (handle)dirfd, path, flags));
+}
+
 typedef struct drv_fs_info {
     size_t fsBlockSize;
     size_t freeBlocks; // in units of 'fsBlockSize'
