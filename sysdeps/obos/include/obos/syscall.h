@@ -106,7 +106,9 @@ enum {
     Sys_SetGid,
     Sys_GetUid,
     Sys_GetGid,
-    Sys_UnlinkAt
+    Sys_UnlinkAt,
+    Sys_MakeDiskSwap,
+    Sys_SwitchSwap,
 };
 
 #ifdef __cplusplus
