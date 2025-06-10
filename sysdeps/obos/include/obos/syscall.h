@@ -109,6 +109,7 @@ enum {
     Sys_UnlinkAt,
     Sys_MakeDiskSwap,
     Sys_SwitchSwap,
+    Sys_SyncAnonPages,
 };
 
 #ifdef __cplusplus
