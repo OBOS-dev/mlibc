@@ -348,7 +348,7 @@ static int parse_file_status(obos_status status)
         case OBOS_STATUS_PAGE_FAULT: return EFAULT;
         case OBOS_STATUS_NOT_A_FILE: return EISDIR;
         case OBOS_STATUS_UNINITIALIZED: return EBADF;
-        case OBOS_STATUS_EOF: return EIO;
+        case OBOS_STATUS_EOF: return 0;
         case OBOS_STATUS_ACCESS_DENIED: return EACCES;
         case OBOS_STATUS_NO_SYSCALL: return ENOSYS;
         case OBOS_STATUS_NOT_ENOUGH_MEMORY: return ENOSPC;
@@ -666,6 +666,15 @@ int sys_read(int fd, void *buf, size_t count, ssize_t *bytes_read)
 int sys_write(int fd, const void *buf, size_t count, ssize_t *bytes_written)
 {
     return parse_file_status((obos_status)syscall4(Sys_FdWrite, fd, buf, count, bytes_written));
+}
+
+int sys_pread(int fd, void *buf, size_t n, off_t off, ssize_t *bytes_read)
+{
+    return parse_file_status((obos_status)syscall5(Sys_FdPRead, fd, buf, n, bytes_read, off));
+}
+int sys_pwrite(int fd, const void *buf, size_t n, off_t off, ssize_t *bytes_written)
+{
+    return parse_file_status((obos_status)syscall5(Sys_FdPWrite, fd, buf, n, bytes_written, off));
 }
 
 int sys_seek(int fd, off_t offset, int whence, off_t *new_offset)

@@ -110,6 +110,8 @@ enum {
     Sys_MakeDiskSwap,
     Sys_SwitchSwap,
     Sys_SyncAnonPages,
+    Sys_FdPWrite,
+    Sys_FdPRead,
 };
 
 #ifdef __cplusplus
