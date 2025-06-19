@@ -361,6 +361,7 @@ static int parse_file_status(obos_status status)
         case OBOS_STATUS_INVALID_IOCTL: return EINVAL;
         case OBOS_STATUS_RETRY:
         case OBOS_STATUS_TIMED_OUT: return EAGAIN;
+        case OBOS_STATUS_INVALID_OPERATION: return EIO;
         default: sys_libc_panic();
     }
 }
