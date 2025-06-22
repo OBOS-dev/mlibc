@@ -102,7 +102,7 @@ int sys_dup2(int fd, int flags, int newfd)
 
 int sys_setpgid(pid_t pid, pid_t pgid)
 {
-	(void)(pid,pgid);
+	(void)(pid && pgid);
 	return 0;
 }
 
@@ -519,8 +519,8 @@ int sys_stat(fsfd_target fsfdt, int fd, const char *path, int flags, struct stat
 
 static int access_common(struct stat* st, int mode)
 {
-    const int uid = sys_getuid();
-    const int gid = sys_getgid();
+    const uid_t uid = sys_getuid();
+    const gid_t gid = sys_getgid();
 
     mode_t mode_mask = 0;
     if (uid == st->st_uid)
@@ -805,15 +805,15 @@ int sys_sysconf(int num, long* ret)
 void sys_yield()
 { syscall0(Sys_Yield); }
 
-/*int sys_tcgetattr(int fd, struct termios *attr)
+int sys_sleep(time_t *secs, long *nanos)
 {
-    infoLogger() << __func__ << " is unimplemented" << frg::endlog;
+    long ms = *secs * 1000;
+    if (!ms)
+        ms = *nanos / 1000000;
+    if (!ms)
+        return EINVAL;
+    syscall2(Sys_SleepMS, ms, nullptr);
     return 0;
 }
-int sys_tcsetattr(int, int, const struct termios *attr)
-{
-    infoLogger() << __func__ << " is unimplemented" << frg::endlog;
-    return 0;
-}*/
 
 } // namespace mlibc
