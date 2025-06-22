@@ -34,7 +34,11 @@ int mlibc::sys_clone(void *tcb, pid_t *pid_out, void *stack)
     if (ctx == HANDLE_INVALID)
         return EINVAL;
 
-    handle thr = syscall3(Sys_ThreadCreate, 2 /*THREAD_PRIORITY_NORMAL*/, 0, ctx);
+#ifdef __SIZEOF_INT128__
+    handle thr = syscall4(Sys_ThreadCreate, 2 /*THREAD_PRIORITY_NORMAL*/, 0,0, ctx);
+#else
+    handle thr = syscall3(Sys_ThreadCreate, 2, 0, ctx);
+#endif
     if (thr == HANDLE_INVALID)
     {
         syscall1(Sys_HandleClose, ctx);
