@@ -46,7 +46,7 @@ int sys_prepare_stack(void **stack, void *entry, void *user_arg, void* tcb, size
     else
         *guard_size = 0;
 
-    uintptr_t* top = (uintptr_t*)(*stack_base + *guard_size + *stack_size);
+    uintptr_t* top = (uintptr_t*)(*stack_base + (*guard_size == 0x1000 ? 0 : *guard_size) + *stack_size);
     *--top = (uintptr_t)user_arg;
     *--top = (uintptr_t)entry;
     *--top = (uintptr_t)tcb;
