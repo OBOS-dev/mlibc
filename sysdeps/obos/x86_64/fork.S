@@ -75,7 +75,7 @@ sys_fork:
 
     pop rdi
 
-    mov [rdi], rax
+    mov [rdi], eax
 
     mov rdi, r14
     mov eax, Sys_HandleClose
