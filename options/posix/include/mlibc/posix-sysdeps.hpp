@@ -110,6 +110,7 @@ int sys_close(int fd);
 [[gnu::weak]] int sys_setpriority(int which, id_t who, int prio);
 [[gnu::weak]] int sys_getschedparam(void *tcb, int *policy, struct sched_param *param);
 [[gnu::weak]] int sys_setschedparam(void *tcb, int policy, const struct sched_param *param);
+[[gnu::weak]] int sys_getscheduler(pid_t pid, int *policy);
 [[gnu::weak]] int sys_getparam(pid_t pid, struct sched_param *param);
 [[gnu::weak]] int sys_setparam(pid_t pid, const struct sched_param *param);
 [[gnu::weak]] int sys_get_max_priority(int policy, int *out);
@@ -168,6 +169,8 @@ int sys_vm_unmap(void *pointer, size_t size);
 [[gnu::weak]] int sys_shutdown(int sockfd, int how);
 [[gnu::weak]] int sys_sigprocmask(int how, const sigset_t *__restrict set,
 		sigset_t *__restrict retrieve);
+[[gnu::weak]] int sys_thread_sigmask(int how, const sigset_t *__restrict set,
+		sigset_t *__restrict retrieve);
 [[gnu::weak]] int sys_sigaction(int, const struct sigaction *__restrict,
 		struct sigaction *__restrict);
 // NOTE: POSIX says that behavior of timeout = nullptr is unspecified. We treat this case
@@ -205,6 +208,7 @@ int sys_vm_unmap(void *pointer, size_t size);
 [[gnu::weak]] int sys_setitimer(int which, const struct itimerval *new_value, struct itimerval *old_value);
 [[gnu::weak]] int sys_timer_create(clockid_t clk, struct sigevent *__restrict evp, timer_t *__restrict res);
 [[gnu::weak]] int sys_timer_settime(timer_t t, int flags, const struct itimerspec *__restrict val, struct itimerspec *__restrict old);
+[[gnu::weak]] int sys_timer_gettime(timer_t t, struct itimerspec *val);
 [[gnu::weak]] int sys_timer_delete(timer_t t);
 [[gnu::weak]] int sys_times(struct tms *tms, clock_t *out);
 [[gnu::weak]] int sys_uname(struct utsname *buf);

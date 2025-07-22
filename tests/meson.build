@@ -122,10 +122,18 @@ all_test_cases = [
 	'linux/getifaddrs',
 	'linux/pidfd',
 	'linux/timerfd',
+	'linux/utmp',
+	'linux/utmpx',
 ]
 
 if host_machine.system() == 'linux'
 	all_test_cases += 'glibc/linux-syscall'
+endif
+
+# We only add some tests if the target is the same as the build machine.
+if build_machine.cpu_family() == target_machine.cpu_family()
+	# process_vm_readv_writev can only run natively beacuse qemu-user doesn't support these syscalls.
+	all_test_cases += 'linux/process_vm_readv_writev'
 endif
 
 fail_test_cases = [
@@ -140,6 +148,7 @@ wrapped_test_cases = [
 
 host_libc_excluded_test_cases = [
 	'bsd/strl', # These functions do not exist on Linux.
+	'rtld/search-order', # See rtld/search-order/meson.build.
 ]
 host_libc_noasan_test_cases = [
 	'posix/pthread_cancel',

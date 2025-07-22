@@ -14,11 +14,11 @@ libc_sources += files(
 	'generic/sys-sendfile.cpp',
 	'generic/sys-signalfd.cpp',
 	'generic/sys-timerfd.cpp',
+	'generic/sys-uio.cpp',
 	'generic/sys-eventfd.cpp',
 	'generic/sys-reboot.cpp',
 	'generic/sys-xattr.cpp',
 	'generic/utmp.cpp',
-	'generic/utmpx.cpp',
 	'generic/linux-unistd.cpp',
 	'generic/malloc.cpp',
 	'generic/sys-fsuid.cpp',
@@ -44,7 +44,6 @@ if not no_headers
 		'include/mntent.h',
 		'include/pty.h',
 		'include/utmp.h',
-		'include/utmpx.h',
 		'include/values.h',
 		'include/lastlog.h',
 		'include/module.h',
@@ -53,6 +52,7 @@ if not no_headers
 		'include/bits/linux/linux_unistd.h',
 		'include/bits/linux/linux_sched.h',
 		'include/bits/linux/linux_stat.h',
+		'include/bits/linux/linux_uio.h',
 		'include/bits/linux/cpu_set.h',
 		subdir: 'bits/linux'
 	)

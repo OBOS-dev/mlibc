@@ -112,12 +112,12 @@ int sys_chroot(const char *path) {
 int sys_mkdir(const char *path, mode_t mode) { return sys_mkdirat(AT_FDCWD, path, mode); }
 
 int sys_mkdirat(int dirfd, const char *path, mode_t mode) {
-	(void)mode;
 	SignalGuard sguard;
 
 	managarm::posix::MkdirAtRequest<MemoryAllocator> req(getSysdepsAllocator());
 	req.set_fd(dirfd);
 	req.set_path(frg::string<MemoryAllocator>(getSysdepsAllocator(), path));
+	req.set_mode(mode);
 
 	auto [offer, send_head, send_tail, recv_resp] = exchangeMsgsSync(
 	    getPosixLane(),
@@ -2160,7 +2160,8 @@ sys_statx(int dirfd, const char *pathname, int flags, unsigned int mask, struct 
 	SignalGuard sguard;
 
 	managarm::posix::FstatAtRequest<MemoryAllocator> req(getSysdepsAllocator());
-	req.set_path(frg::string<MemoryAllocator>(getSysdepsAllocator(), pathname));
+	if (pathname)
+		req.set_path(frg::string<MemoryAllocator>(getSysdepsAllocator(), pathname));
 	req.set_fd(dirfd);
 
 	if (flags
@@ -2522,9 +2523,26 @@ int sys_fchownat(int dirfd, const char *pathname, uid_t owner, gid_t group, int 
 }
 
 int sys_umask(mode_t mode, mode_t *old) {
-	(void)mode;
-	mlibc::infoLogger() << "mlibc: sys_umask is a stub, hardcoding 022!" << frg::endlog;
-	*old = 022;
+	SignalGuard sguard;
+
+	managarm::posix::UmaskRequest<MemoryAllocator> req(getSysdepsAllocator());
+	req.set_newmask(mode);
+
+	auto [offer, send_head, recv_resp] = exchangeMsgsSync(
+	    getPosixLane(),
+	    helix_ng::offer(
+	        helix_ng::sendBragiHeadOnly(req, getSysdepsAllocator()), helix_ng::recvInline()
+	    )
+	);
+
+	HEL_CHECK(offer.error());
+	HEL_CHECK(send_head.error());
+	HEL_CHECK(recv_resp.error());
+
+	managarm::posix::UmaskResponse<MemoryAllocator> resp(getSysdepsAllocator());
+	resp.ParseFromArray(recv_resp.data(), recv_resp.length());
+	*old = resp.oldmask();
+
 	return 0;
 }
 
