@@ -112,6 +112,8 @@ enum {
     Sys_SyncAnonPages,
     Sys_FdPWrite,
     Sys_FdPRead,
+    Sys_SymLink,
+    Sys_SymLinkAt,
 };
 
 #ifdef __cplusplus

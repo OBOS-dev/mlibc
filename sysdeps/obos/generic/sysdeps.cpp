@@ -362,8 +362,17 @@ static int parse_file_status(obos_status status)
         case OBOS_STATUS_RETRY:
         case OBOS_STATUS_TIMED_OUT: return EAGAIN;
         case OBOS_STATUS_INVALID_OPERATION: return EIO;
-        default: sys_libc_panic();
+        default: sys_libc_log("Unknown obos status code returned from a VFS syscall, returning EIO\n"); return EIO;
     }
+}
+
+int sys_symlink(const char* target_path, const char* link_path)
+{
+    return parse_file_status((obos_status)syscall2(Sys_SymLink, target_path, link_path));
+}
+int sys_symlinkat(const char* target_path, int dirfd, const char* link_path)
+{
+    return parse_file_status((obos_status)syscall3(Sys_SymLinkAt, target_path, dirfd, link_path));
 }
 
 int sys_open_dir(const char *path, int *hnd)
