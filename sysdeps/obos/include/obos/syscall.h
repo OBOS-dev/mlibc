@@ -114,6 +114,7 @@ enum {
     Sys_FdPRead,
     Sys_SymLink,
     Sys_SymLinkAt,
+    Sys_CreateNamedPipe,
 };
 
 #ifdef __cplusplus

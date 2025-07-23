@@ -100,6 +100,11 @@ int sys_dup2(int fd, int flags, int newfd)
         return parse_file_status((obos_status)syscall2(Sys_HandleClone, fd, &newfd));
 }
 
+int sys_mkfifoat(int dirfd, const char *path, mode_t mode)
+{
+    return parse_file_status((obos_status)syscall4(Sys_CreateNamedPipe, dirfd, path, mode, 0));
+}
+
 int sys_setpgid(pid_t pid, pid_t pgid)
 {
 	(void)(pid && pgid);
