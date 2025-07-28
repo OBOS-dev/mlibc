@@ -133,6 +133,16 @@ int sys_kill(pid_t pid, int sigval)
     return err;
 }
 
+int sys_tgkill(int, int tid, int sigval)
+{
+    handle thread = syscall1(Sys_ThreadOpen, tid);
+    if (thread == HANDLE_INVALID)
+        return ESRCH;
+    int err = interpret_signal_status((obos_status)syscall2(Sys_Kill, thread, sigval));
+    syscall1(Sys_HandleClose, thread);
+    return err;
+}
+
 int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid)
 {
     // TODO(oberrow): struct rusage and pid values that are < -1 or zero
