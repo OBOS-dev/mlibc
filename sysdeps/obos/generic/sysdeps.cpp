@@ -135,7 +135,8 @@ int sys_kill(pid_t pid, int sigval)
 
 int sys_tgkill(int, int tid, int sigval)
 {
-    handle thread = syscall1(Sys_ThreadOpen, tid);
+// TODO: Thread groups?
+    handle thread = syscall2(Sys_ThreadOpen, HANDLE_CURRENT, tid);
     if (thread == HANDLE_INVALID)
         return ESRCH;
     int err = interpret_signal_status((obos_status)syscall2(Sys_Kill, thread, sigval));
