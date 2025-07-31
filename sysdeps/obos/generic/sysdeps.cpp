@@ -841,4 +841,12 @@ int sys_sleep(time_t *secs, long *nanos)
     return 0;
 }
 
+#if __MLIBC_BSD_OPTION
+int sys_brk(void **out)
+{
+    (void)out;
+    return ENOMEM;
+}
+#endif
+
 } // namespace mlibc

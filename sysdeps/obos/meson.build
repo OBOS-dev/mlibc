@@ -3,7 +3,7 @@ sysdep_supported_options = {
 # NOTE(oberrow): When you implement the linux option, remove the installed headers under sys, as well as generic/mount.cpp, generic/statfs.cpp, and generic/mntent.cpp
     'linux': false,
     'glibc': true,
-    'bsd': false,
+    'bsd': true,
 }
 
 #libgcc_dependency = false
