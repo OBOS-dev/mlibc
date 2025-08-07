@@ -486,9 +486,11 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
     (void)mode;
     int real_flags = 0;
 
-    if (~flags & O_WRONLY)
+    if ((flags & 3) == O_RDONLY)
         real_flags |= 1 /*FD_OFLAGS_READ*/;
-    if (flags & O_RDWR)
+    if ((flags & 3) == O_WRONLY)
+        real_flags |= 2 /*FD_OFLAGS_WRITE*/;
+    if ((flags & 3) == O_RDWR)
         real_flags |= 1|2 /*FD_OFLAGS_READ|FD_OFLAGS_WRITE*/;
     if (flags & O_CLOEXEC)
         real_flags |= 8 /* FD_OFLAGS_NOEXEC */;
@@ -510,8 +512,6 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
 int sys_open(const char *pathname, int flags, mode_t mode, int *fd)
 {
     handle hnd = (handle)syscall0(Sys_FdAlloc);
-    // TODO: mode?
-    (void)(mode);
     uint32_t real_flags = 0;
 
     if ((flags & 3) == O_RDONLY)
