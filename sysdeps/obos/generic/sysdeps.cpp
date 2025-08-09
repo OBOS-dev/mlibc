@@ -378,6 +378,7 @@ static int parse_file_status(obos_status status)
         case OBOS_STATUS_RETRY:
         case OBOS_STATUS_TIMED_OUT: return EAGAIN;
         case OBOS_STATUS_INVALID_OPERATION: return EIO;
+        case OBOS_STATUS_WOULD_BLOCK: return EBUSY;
         default: sys_libc_log("Unknown obos status code returned from a VFS syscall, returning EIO\n"); return EIO;
     }
 }
@@ -424,6 +425,12 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
     		int* num_events;
 	} extra = {.timeout=(tm != UINTPTR_MAX ? &tm : nullptr),.sigmask=sigmask,.num_events=num_events};
 	return parse_file_status((obos_status)syscall5(Sys_PSelect, num_fds, read_set, write_set, except_set, &extra));
+}
+
+int sys_fcntl(int fd, int request, va_list vargs, int *result)
+{
+    uintptr_t arg = va_arg(vargs, uintptr_t);
+    return parse_file_status((obos_status)syscall5(Sys_Fcntl, fd, request, &arg, 1, result));
 }
 
 int sys_isatty(int fd)

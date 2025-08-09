@@ -21,7 +21,7 @@ enum {
     Sys_ThreadSetOwner,
     Sys_ThreadGetTid,
     Sys_WaitOnObject,
-    Sys_WaitOnObjects,
+    Sys_Fcntl,
     Sys_ProcessOpen,
     Sys_ProcessStart,
     Sys_KillProcess,
