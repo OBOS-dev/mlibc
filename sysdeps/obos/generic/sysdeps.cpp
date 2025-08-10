@@ -427,6 +427,16 @@ int sys_pselect(int num_fds, fd_set *read_set, fd_set *write_set, fd_set *except
 	return parse_file_status((obos_status)syscall5(Sys_PSelect, num_fds, read_set, write_set, except_set, &extra));
 }
 
+int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events)
+{
+    uintptr_t obos_timeout = 0;
+    if (timeout < 0)
+        obos_timeout = UINTPTR_MAX;
+    else
+        obos_timeout = timeout;
+    return parse_file_status((obos_status)syscall5(Sys_PPoll, fds, count, &obos_timeout, nullptr, num_events));
+}
+
 int sys_fcntl(int fd, int request, va_list vargs, int *result)
 {
     uintptr_t arg = va_arg(vargs, uintptr_t);

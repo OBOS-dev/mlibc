@@ -115,6 +115,7 @@ enum {
     Sys_SymLink,
     Sys_SymLinkAt,
     Sys_CreateNamedPipe,
+    Sys_PPoll,
 };
 
 #ifdef __cplusplus
