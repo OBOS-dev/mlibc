@@ -518,7 +518,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
 
     handle hnd = syscall0(Sys_FdAlloc);
     obos_status st = (obos_status)syscall5(Sys_FdOpenAtEx, hnd, dirfd, path, real_flags, mode);
-
+    if (st == OBOS_STATUS_NOT_A_FILE && dirfd == AT_FDCWD)
+        return sys_open_dir(path, fd);
     if (int ec = parse_file_status(st); ec != 0)
         return ec;
     *fd = hnd;
@@ -528,6 +529,9 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
 
 int sys_open(const char *pathname, int flags, mode_t mode, int *fd)
 {
+    if (flags & O_DIRECTORY)
+        return sys_open_dir(pathname, fd);
+
     handle hnd = (handle)syscall0(Sys_FdAlloc);
     uint32_t real_flags = 0;
 
@@ -547,6 +551,12 @@ int sys_open(const char *pathname, int flags, mode_t mode, int *fd)
     obos_status st = OBOS_STATUS_SUCCESS;
 
     st = (obos_status)syscall4(Sys_FdOpenEx, hnd, pathname, real_flags, mode);
+    if (st == OBOS_STATUS_NOT_A_FILE)
+    {
+        syscall1(Sys_HandleClose, hnd);
+        return sys_open_dir(pathname, fd);
+    }
+
     if (int ec = parse_file_status(st); ec != 0)
         return ec;
     *fd = hnd;
