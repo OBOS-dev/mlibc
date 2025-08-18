@@ -116,6 +116,18 @@ enum {
     Sys_SymLinkAt,
     Sys_CreateNamedPipe,
     Sys_PPoll,
+    Sys_Socket,
+    Sys_SendTo,
+    Sys_RecvFrom,
+    Sys_Listen,
+    Sys_Accept,
+    Sys_Bind,
+    Sys_Connect,
+    Sys_SockName,
+    Sys_PeerName,
+    Sys_GetSockOpt,
+    Sys_SetSockOpt,
+    Sys_ShutdownSocket,
 };
 
 #ifdef __cplusplus

@@ -379,6 +379,12 @@ static int parse_file_status(obos_status status)
         case OBOS_STATUS_TIMED_OUT: return EAGAIN;
         case OBOS_STATUS_INVALID_OPERATION: return EIO;
         case OBOS_STATUS_WOULD_BLOCK: return EBUSY;
+        case OBOS_STATUS_PORT_IN_USE: return EADDRINUSE;
+        case OBOS_STATUS_ADDRESS_IN_USE: return EADDRINUSE;
+        case OBOS_STATUS_ADDRESS_NOT_AVAILABLE: return EADDRNOTAVAIL;
+        case OBOS_STATUS_NO_ROUTE_TO_HOST: return EHOSTUNREACH;
+        case OBOS_STATUS_MESSAGE_TOO_BIG: return EMSGSIZE;
+        case OBOS_STATUS_CONNECTION_REFUSED: return ECONNREFUSED;
         default: sys_libc_log("Unknown obos status code returned from a VFS syscall, returning EIO\n"); return EIO;
     }
 }
@@ -875,5 +881,116 @@ int sys_brk(void **out)
     return ENOMEM;
 }
 #endif
+
+struct sys_socket_io_params {
+    union {
+        struct sockaddr* sock_addr;
+        const struct sockaddr* csock_addr;
+    };
+    // Untouched in sendto, modified in recvfrom
+    size_t addr_length;
+    // Only valid in recvfrom
+    size_t nRead;
+};
+
+int sys_socket(int family, int type, int protocol, int *fd)
+{
+    *fd = syscall0(Sys_FdAlloc);
+    int ec = parse_file_status((obos_status)syscall4(Sys_Socket, *fd, family, type, protocol));
+    if (ec)
+        syscall1(Sys_HandleClose, *fd);
+    return ec;
+}
+
+ssize_t sys_sendto(int fd, const void *buffer, size_t size, int flags, const struct sockaddr *sock_addr, socklen_t addr_length, ssize_t *length)
+{
+    struct sys_socket_io_params params = {
+        .csock_addr = sock_addr,
+        .addr_length = addr_length,
+        .nRead = 0
+    };
+    *length = size;
+    return parse_file_status((obos_status)syscall5(Sys_SendTo, fd, buffer, size, flags, &params));
+}
+
+ssize_t sys_recvfrom(int fd, void *buffer, size_t size, int flags, struct sockaddr *sock_addr, socklen_t *addr_length, ssize_t *length)
+{
+    struct sys_socket_io_params params = {
+        .sock_addr = sock_addr,
+        .addr_length = *addr_length,
+        .nRead = 0
+    };
+    int ec = parse_file_status((obos_status)syscall5(Sys_SendTo, fd, buffer, size, flags, &params));
+    *length = params.nRead;
+    *addr_length = params.addr_length;
+    return ec;
+}
+
+int sys_listen(int fd, int backlog)
+{
+    return parse_file_status((obos_status)syscall2(Sys_Listen, fd, backlog));
+}
+
+int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_length, int flags)
+{
+    *newfd = syscall0(Sys_FdAlloc);
+    size_t saddr_klength = *addr_length;
+    int ec = parse_file_status((obos_status)syscall5(Sys_Accept, fd, *newfd, addr_ptr, &saddr_klength, flags));
+    *addr_length = saddr_klength;
+    if (ec)
+        syscall1(Sys_HandleClose, *newfd);
+    return ec;
+}
+
+int sys_bind(int fd, const struct sockaddr *addr_ptr, socklen_t addr_length)
+{
+    return parse_file_status((obos_status)syscall3(Sys_Bind, fd, addr_ptr, addr_length));
+}
+
+int sys_connect(int fd, const struct sockaddr *addr_ptr, socklen_t addr_length)
+{
+    return parse_file_status((obos_status)syscall3(Sys_Connect, fd, addr_ptr, addr_length));
+}
+
+int sys_sockname(int fd, struct sockaddr *addr_ptr, socklen_t max_addr_length,
+		socklen_t *actual_length)
+{
+    size_t actual_length_s = 0;
+    int ec = parse_file_status((obos_status)syscall4(Sys_SockName, fd, addr_ptr, max_addr_length, &actual_length_s));
+    if (!ec && actual_length)
+        *actual_length = actual_length_s;
+    return ec;
+}
+
+int sys_peername(int fd, struct sockaddr *addr_ptr, socklen_t max_addr_length,
+	socklen_t *actual_length)
+{
+    size_t actual_length_s = 0;
+    int ec = parse_file_status((obos_status)syscall4(Sys_PeerName, fd, addr_ptr, max_addr_length, &actual_length_s));
+    if (!ec && actual_length)
+        *actual_length = actual_length_s;
+    return ec;
+}
+
+int sys_getsockopt(int fd, int layer, int number,
+		void *__restrict buffer, socklen_t *__restrict size)
+{
+    size_t sz = *size;
+    int ec = parse_file_status((obos_status)syscall5(Sys_GetSockOpt, fd, layer, number, buffer, &sz));
+    if (!ec)
+        *size = sz;
+    return ec;
+}
+
+int sys_setsockopt(int fd, int layer, int number,
+		const void *buffer, socklen_t size)
+{
+    return parse_file_status((obos_status)syscall5(Sys_SetSockOpt, fd, layer, number, buffer, size));
+}
+
+int sys_shutdown(int sockfd, int how)
+{
+    return parse_file_status((obos_status)syscall2(Sys_ShutdownSocket, sockfd, how));
+}
 
 } // namespace mlibc
