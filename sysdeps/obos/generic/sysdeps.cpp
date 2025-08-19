@@ -921,7 +921,7 @@ ssize_t sys_recvfrom(int fd, void *buffer, size_t size, int flags, struct sockad
         .addr_length = addr_length ? *addr_length : 0,
         .nRead = 0
     };
-    int ec = parse_file_status((obos_status)syscall5(Sys_SendTo, fd, buffer, size, flags, &params));
+    int ec = parse_file_status((obos_status)syscall5(Sys_RecvFrom, fd, buffer, size, flags, &params));
     if (length)
         *length = params.nRead;
     if (addr_length)
