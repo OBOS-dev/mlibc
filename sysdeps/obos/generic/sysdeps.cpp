@@ -909,7 +909,8 @@ ssize_t sys_sendto(int fd, const void *buffer, size_t size, int flags, const str
         .addr_length = addr_length,
         .nRead = 0
     };
-    *length = size;
+    if (length)
+        *length = size;
     return parse_file_status((obos_status)syscall5(Sys_SendTo, fd, buffer, size, flags, &params));
 }
 
@@ -917,12 +918,14 @@ ssize_t sys_recvfrom(int fd, void *buffer, size_t size, int flags, struct sockad
 {
     struct sys_socket_io_params params = {
         .sock_addr = sock_addr,
-        .addr_length = *addr_length,
+        .addr_length = addr_length ? *addr_length : 0,
         .nRead = 0
     };
     int ec = parse_file_status((obos_status)syscall5(Sys_SendTo, fd, buffer, size, flags, &params));
-    *length = params.nRead;
-    *addr_length = params.addr_length;
+    if (length)
+        *length = params.nRead;
+    if (addr_length)
+        *addr_length = params.addr_length;
     return ec;
 }
 
