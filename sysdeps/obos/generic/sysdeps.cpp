@@ -996,4 +996,20 @@ int sys_shutdown(int sockfd, int how)
     return parse_file_status((obos_status)syscall2(Sys_ShutdownSocket, sockfd, how));
 }
 
+int sys_gethostname(char *buffer, size_t bufsize)
+{
+    obos_status st = (obos_status)syscall2(Sys_GetHostname, buffer, bufsize);
+    switch (st)
+    {
+        case OBOS_STATUS_INVALID_ARGUMENT: return ENAMETOOLONG;
+        case OBOS_STATUS_SUCCESS: return 0;
+        default: return parse_file_status(st);
+    }
+}
+
+int sys_sethostname(const char *buffer, size_t bufsize)
+{
+    return parse_file_status((obos_status)syscall2(Sys_SetHostname, buffer, bufsize));
+}
+
 } // namespace mlibc

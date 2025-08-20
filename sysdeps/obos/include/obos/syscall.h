@@ -128,6 +128,8 @@ enum {
     Sys_GetSockOpt,
     Sys_SetSockOpt,
     Sys_ShutdownSocket,
+    Sys_GetHostname,
+    Sys_SetHostname,
 };
 
 #ifdef __cplusplus
