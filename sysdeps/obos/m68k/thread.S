@@ -2,3 +2,5 @@
 
 __mlibc_thread_entry:
     bra.s __mlibc_thread_entry
+
+.section .note.GNU-stack,"",%progbits

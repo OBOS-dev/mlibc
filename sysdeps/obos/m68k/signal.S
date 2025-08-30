@@ -2,3 +2,5 @@
 
 __mlibc_restorer:
     bra.s __mlibc_restorer
+
+.section .note.GNU-stack,"",%progbits

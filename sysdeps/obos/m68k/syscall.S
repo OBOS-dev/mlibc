@@ -13,3 +13,5 @@ __m68k_read_tp:
     rts
 
 .hidden syscall
+
+.section .note.GNU-stack,"",%progbits
