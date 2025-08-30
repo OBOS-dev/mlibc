@@ -107,7 +107,7 @@ if not no_headers
 endif
 
 if not headers_only
-    if host_machine.cpu_family != "m68k"
+    if host_machine.cpu_family() != 'm68k'
         crt = custom_target('crt0',
             build_by_default: true,
             command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
@@ -134,7 +134,7 @@ if not headers_only
             install: true,
             install_dir: get_option('libdir')
         )
-    elif host_machine.cpu_family == "m68k"
+    elif host_machine.cpu_family() == 'm68k'
         crt = custom_target('crt1',
             build_by_default: true,
             command: c_compiler.cmd_array() + ['-c', '-o', '@OUTPUT@', '@INPUT@'],
