@@ -1,6 +1,4 @@
 .global syscall
-.global _ZN5mlibc11sys_tcb_setEPv
-.global __m68k_read_tp
 
 syscall:
     move.l %sp@-, %fp
@@ -10,12 +8,12 @@ syscall:
     move.l %sp@-, %d4
     move.l %sp@-, %d5
 
-    move.l (+4,%fp), %d5
-    move.l (+8,%fp), %d0
-    move.l (+12,%fp), %d1
-    move.l (+16,%fp), %d2
-    move.l (+20,%fp), %d3
-    move.l (+24,%fp), %d4
+    move.l (+8,%fp), %d5
+    move.l (+12,%fp), %d0
+    move.l (+16,%fp), %d1
+    move.l (+20,%fp), %d2
+    move.l (+24,%fp), %d3
+    move.l (+28,%fp), %d4
     trap #0
 
     move.l %sp@+, %d5
