@@ -806,12 +806,7 @@ void ObjectRepository::_parseDynamic(SharedObject *object) {
 #if defined(__riscv)
 		case DT_TEXTREL: // Work around https://sourceware.org/bugzilla/show_bug.cgi?id=24673.
 #endif
-break;
-#if !defined(__riscv)
-		case DT_TEXTREL: // Work around https://sourceware.org/bugzilla/show_bug.cgi?id=24673.
-			object->hasTextRel = true;
 			break;
-#endif
 		case DT_TLSDESC_PLT: case DT_TLSDESC_GOT:
 			break;
 		default:
