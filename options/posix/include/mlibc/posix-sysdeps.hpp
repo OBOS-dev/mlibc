@@ -221,8 +221,6 @@ int sys_vm_unmap(void *pointer, size_t size);
 [[gnu::weak]] int sys_setreuid(uid_t ruid, uid_t euid);
 [[gnu::weak]] int sys_setregid(gid_t rgid, gid_t egid);
 
-[[gnu::weak]] int sys_poll(struct pollfd *fds, nfds_t count, int timeout, int *num_events);
-
 [[gnu::weak]] int sys_if_indextoname(unsigned int index, char *name);
 [[gnu::weak]] int sys_if_nametoindex(const char *name, unsigned int *ret);
 
@@ -252,6 +250,8 @@ int sys_vm_unmap(void *pointer, size_t size);
 [[gnu::weak]] int sys_shmctl(int *idx, int shmid, int cmd, struct shmid_ds *buf);
 [[gnu::weak]] int sys_shmdt(const void *shmaddr);
 [[gnu::weak]] int sys_shmget(int *shm_id, key_t key, size_t size, int shmflg);
+
+[[gnu::weak]] int sys_inet_configured(bool *ipv4, bool *ipv6);
 
 } //namespace mlibc
 

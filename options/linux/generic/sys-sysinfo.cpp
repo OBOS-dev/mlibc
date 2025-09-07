@@ -4,6 +4,7 @@
 #include <bits/ensure.h>
 #include <mlibc/debug.hpp>
 #include <mlibc/linux-sysdeps.hpp>
+#include <unistd.h>
 
 #include <unistd.h>
 
@@ -17,9 +18,9 @@ int sysinfo(struct sysinfo *info) {
 }
 
 int get_nprocs(void) {
-    return sysconf(_SC_NPROCESSORS_ONLN);
+	return sysconf(_SC_NPROCESSORS_ONLN);
 }
 
 int get_nprocs_conf(void) {
-    return sysconf(_SC_NPROCESSORS_CONF);
+	return sysconf(_SC_NPROCESSORS_CONF);
 }

@@ -501,7 +501,8 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result) {
 	auto r = menix_syscall(SYSCALL_IOCTL, fd, request, (size_t)arg);
 	if (r.error)
 		return r.error;
-	*result = r.value;
+	if (result)
+		*result = r.value;
 	return 0;
 }
 
@@ -576,11 +577,22 @@ int sys_peername(
 }
 
 int sys_gethostname(char *buffer, size_t bufsize) {
-	return menix_syscall(SYSCALL_GETHOSTNAME, (size_t)buffer, bufsize).error;
+	struct utsname name;
+	int i = sys_uname(&name);
+	if (i)
+		return i;
+	if (bufsize >= sizeof(name.nodename))
+		bufsize = sizeof(name.nodename) - 1;
+	memcpy(buffer, name.nodename, bufsize);
+	return 0;
 }
 
 int sys_sethostname(const char *buffer, size_t bufsize) {
-	return menix_syscall(SYSCALL_SETHOSTNAME, (size_t)buffer, bufsize).error;
+	struct utsname name = {};
+	if (bufsize >= sizeof(name.nodename))
+		bufsize = sizeof(name.nodename) - 1;
+	memcpy(name.nodename, buffer, bufsize);
+	return menix_syscall(SYSCALL_SETUNAME, (size_t)&name).error;
 }
 
 int sys_mkfifoat(int dirfd, const char *path, mode_t mode) {
@@ -647,7 +659,7 @@ int sys_timer_settime(
 int sys_timer_delete(timer_t t) { return menix_syscall(SYSCALL_TIMER_DELETE, (size_t)t).error; }
 
 int sys_uname(struct utsname *buf) {
-	auto r = menix_syscall(SYSCALL_UNAME, (size_t)buf);
+	auto r = menix_syscall(SYSCALL_GETUNAME, (size_t)buf);
 	return r.error;
 }
 
