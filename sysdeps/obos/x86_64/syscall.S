@@ -19,3 +19,5 @@ syscall:
 .hidden syscall
 
 .att_syntax prefix
+
+.section .note.GNU-stack,"",%progbits

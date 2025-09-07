@@ -1,5 +1,7 @@
 .global __mlibc_restorer
 
+#define OBOSS_SigReturn 48
+
 __mlibc_restorer:
     bra.s __mlibc_restorer
 

@@ -121,3 +121,5 @@ fork_shim:
 #endif
 
 .att_syntax prefix
+
+.section .note.GNU-stack,"",%progbits

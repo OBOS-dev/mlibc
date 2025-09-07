@@ -10,3 +10,5 @@ __mlibc_restorer:
     syscall
     // uh oh
     ud2
+
+.section .note.GNU-stack,"",%progbits
