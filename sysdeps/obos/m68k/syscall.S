@@ -1,12 +1,12 @@
 .global syscall
 
 syscall:
-    move.l %sp@-, %fp
+    move.l %fp, %sp@-
     move.l %sp, %fp
-    move.l %sp@-, %d2
-    move.l %sp@-, %d3
-    move.l %sp@-, %d4
-    move.l %sp@-, %d5
+    move.l %d2, %sp@-
+    move.l %d3, %sp@-
+    move.l %d4, %sp@-
+    move.l %d5, %sp@-
 
     move.l (+8,%fp), %d5
     move.l (+12,%fp), %d0
