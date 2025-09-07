@@ -235,6 +235,8 @@ struct SharedObject {
 
 	bool dependenciesDiscovered = false;
 
+	bool hasTextRel = false;
+
 	// PHDR related stuff, we only set these for the main executable
 	void *phdrPointer = nullptr;
 	size_t phdrEntrySize = 0;

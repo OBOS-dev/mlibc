@@ -554,7 +554,7 @@ frg::expected<LinkerError, void> ObjectRepository::_fetchFromFile(SharedObject *
 			int prot = 0;
 			if(phdr->p_flags & PF_R)
 				prot |= PROT_READ;
-			if(phdr->p_flags & PF_W)
+			if(phdr->p_flags & PF_W || object->hasTextRel)
 				prot |= PROT_WRITE;
 			if(phdr->p_flags & PF_X)
 				prot |= PROT_EXEC;
@@ -803,10 +803,15 @@ void ObjectRepository::_parseDynamic(SharedObject *object) {
 		case DT_RELA: case DT_RELASZ: case DT_RELAENT: case DT_RELACOUNT:
 		case DT_REL: case DT_RELSZ: case DT_RELENT: case DT_RELCOUNT:
 		case DT_RELR: case DT_RELRSZ: case DT_RELRENT:
-#if defined(__riscv) || defined(__m68k__)
+#if defined(__riscv)
 		case DT_TEXTREL: // Work around https://sourceware.org/bugzilla/show_bug.cgi?id=24673.
 #endif
+break;
+#if !defined(__riscv)
+		case DT_TEXTREL: // Work around https://sourceware.org/bugzilla/show_bug.cgi?id=24673.
+			object->hasTextRel = true;
 			break;
+#endif
 		case DT_TLSDESC_PLT: case DT_TLSDESC_GOT:
 			break;
 		default:
