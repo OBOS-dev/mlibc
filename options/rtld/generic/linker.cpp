@@ -2016,6 +2016,14 @@ void Loader::_processRelocations(Relocation &rel) {
 	} break;
 #endif
 
+	case R_PC32:
+	{
+		__ensure(rel.symbol_index());
+		uintptr_t symbol_addr = p ? p->virtualAddress() : 0;
+		rel.relocate(symbol_addr + rel.addend_norel() - (elf_addr)rel.destination());
+		break;
+	}
+
 	case R_ABSOLUTE: {
 		__ensure(rel.symbol_index());
 		uintptr_t symbol_addr = p ? p->virtualAddress() : 0;
