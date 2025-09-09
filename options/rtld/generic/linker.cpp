@@ -1,4 +1,5 @@
-#include "mlibc/internal-sysdeps.hpp"
+#include <frg/string.hpp>
+#include <mlibc/internal-sysdeps.hpp>
 #include <mlibc/arch-defs.hpp>
 #include <stdint.h>
 #include <string.h>
@@ -883,9 +884,6 @@ void ObjectRepository::_parseDynamic(SharedObject *object) {
 		case DT_RELA: case DT_RELASZ: case DT_RELAENT: case DT_RELACOUNT:
 		case DT_REL: case DT_RELSZ: case DT_RELENT: case DT_RELCOUNT:
 		case DT_RELR: case DT_RELRSZ: case DT_RELRENT:
-#if defined(__riscv)
-		case DT_TEXTREL: // Work around https://sourceware.org/bugzilla/show_bug.cgi?id=24673.
-#endif
 			break;
 		case DT_TLSDESC_PLT: case DT_TLSDESC_GOT:
 			break;
@@ -1663,9 +1661,14 @@ void Scope::appendObject(SharedObject *object) {
 frg::optional<ObjectSymbol> Scope::resolveGlobalOrLocal(Scope &globalScope,
 		Scope *localScope, frg::string_view string, uint64_t skipRts, ResolveFlags flags,
 		frg::optional<SymbolVersion> version) {
-	auto sym = globalScope.resolveSymbol(string, skipRts, flags | skipGlobalAfterRts, version);
-	if(!sym && localScope)
-		sym = localScope->resolveSymbol(string, skipRts, flags | skipGlobalAfterRts, version);
+	auto sym = globalScope.resolveSymbol(string, skipRts, flags | skipGlobalAfterRts | resolveCopy, version);
+	// If the symbol resolved is in the main object, try seeing if we can find
+	// a better match in a different object.
+	if (sym && !sym->object()->isMainObject)
+		return sym;
+	auto local_sym = localScope->resolveSymbol(string, skipRts, flags | skipGlobalAfterRts, version);
+	if (sym.has_value() && sym->object()->isMainObject && local_sym)
+		return local_sym;
 	return sym;
 }
 
