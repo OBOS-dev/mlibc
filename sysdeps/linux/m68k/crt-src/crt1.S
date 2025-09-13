@@ -8,8 +8,8 @@
 _start:
 	suba.l %fp, %fp
 	move.l %sp, %d0
-	move.l #main, -(%sp)
 	move.l %d0, -(%sp)
+	move.l #main, -(%sp)
 	jsr __mlibc_entry
 
 .section .note.GNU-stack,"",%progbits
