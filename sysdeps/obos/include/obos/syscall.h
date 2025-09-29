@@ -130,6 +130,9 @@ enum {
     Sys_ShutdownSocket,
     Sys_GetHostname,
     Sys_SetHostname,
+    Sys_KillProcessGroup,
+    Sys_SetProcessGroup,
+    Sys_GetProcessGroup,
 };
 
 #ifdef __cplusplus

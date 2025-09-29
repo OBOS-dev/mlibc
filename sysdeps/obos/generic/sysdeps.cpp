@@ -105,12 +105,6 @@ int sys_mkfifoat(int dirfd, const char *path, mode_t mode)
     return parse_file_status((obos_status)syscall4(Sys_CreateNamedPipe, dirfd, path, mode, 0));
 }
 
-int sys_setpgid(pid_t pid, pid_t pgid)
-{
-	(void)(pid && pgid);
-	return 0;
-}
-
 int sys_sigaltstack(const stack_t *ss, stack_t *oss)
 {
     // stack_t is the same on obos and on Linux (the abi we "borrow" from)
@@ -122,9 +116,13 @@ int sys_kill(pid_t pid, int sigval)
     if (pid == -1)
         return ENOSYS;
     if (pid == 0)
-        return ENOSYS;
+    {
+        pid_t pgid = 0;
+        sys_getpgid(0, &pgid);
+        return interpret_signal_status((obos_status)syscall2(Sys_KillProcessGroup, pgid, sigval));
+    }
     if (pid < -1)
-        pid = -pid;
+        return interpret_signal_status((obos_status)syscall2(Sys_KillProcessGroup, -pid, sigval));
     handle hnd = (handle)syscall1(Sys_ProcessOpen, pid);
     if (hnd == HANDLE_INVALID)
         return ESRCH;
@@ -258,14 +256,39 @@ pid_t sys_getppid()
     return (pid_t)syscall1(Sys_ProcessGetPPID, HANDLE_CURRENT);
 }
 
-// TODO: Progress group IDs
+static int parse_pgid_status(obos_status status)
+{
+    switch (status)
+    {
+        case OBOS_STATUS_SUCCESS: return 0;
+        case OBOS_STATUS_INVALID_ARGUMENT: return EINVAL;
+        case OBOS_STATUS_NOT_FOUND: return ESRCH;
+        case OBOS_STATUS_ACCESS_DENIED: return EPERM;
+        case OBOS_STATUS_INVALID_OPERATION: return EIO;
+        default: return parse_file_status(status);
+    }
+}
+
 int sys_getpgid(pid_t pid, pid_t* pgid)
 {
-    if (pid)
-        *pgid = pid;
-    else
-        *pgid = sys_getpid();
-    return 0;
+    handle hnd = pid != 0 ? (handle)syscall1(Sys_ProcessOpen, pid) : HANDLE_CURRENT;
+    if (HANDLE_TYPE(hnd) == HANDLE_INVALID)
+        return ESRCH;
+    int ec = parse_pgid_status((obos_status)syscall2(Sys_GetProcessGroup, hnd, pgid));
+    if (hnd != HANDLE_CURRENT)
+        syscall1(Sys_HandleClose, hnd);
+    return ec;
+}
+
+int sys_setpgid(pid_t pid, pid_t pgid)
+{
+    handle hnd = pid != 0 ? (handle)syscall1(Sys_ProcessOpen, pid) : HANDLE_CURRENT;
+    if (HANDLE_TYPE(hnd) == HANDLE_INVALID)
+        return ESRCH;
+    int ec = parse_pgid_status((obos_status)syscall2(Sys_SetProcessGroup, hnd, pgid));
+    if (hnd != HANDLE_CURRENT)
+        syscall1(Sys_HandleClose, hnd);
+    return ec;
 }
 
 [[noreturn]] void sys_libc_panic()
