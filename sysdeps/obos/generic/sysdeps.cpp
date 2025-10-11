@@ -412,6 +412,16 @@ static int parse_file_status(obos_status status)
     }
 }
 
+int sys_link(const char *old_path, const char *new_path)
+{
+	return sys_linkat(AT_FDCWD, old_path, AT_FDCWD, new_path, 0);
+}
+
+int sys_linkat(int olddirfd, const char *old_path, int newdirfd, const char *new_path, int flags)
+{
+    return parse_file_status((obos_status)syscall5(Sys_LinkAt, olddirfd, old_path, newdirfd, new_path, flags));
+}
+
 int sys_symlink(const char* target_path, const char* link_path)
 {
     return parse_file_status((obos_status)syscall2(Sys_SymLink, target_path, link_path));

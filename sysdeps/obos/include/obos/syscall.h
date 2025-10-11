@@ -133,6 +133,7 @@ enum {
     Sys_KillProcessGroup,
     Sys_SetProcessGroup,
     Sys_GetProcessGroup,
+    Sys_LinkAt,
 };
 
 #ifdef __cplusplus
