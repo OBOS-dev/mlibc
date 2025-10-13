@@ -145,7 +145,7 @@ int execlp(const char *file, const char *argv0, ...) {
 		argv[0] = (char *)argv0;
 		for(i = 1; i < argc; i++)
 			argv[i] = va_arg(ap, char *);
-		argv[i] = NULL;
+		argv[i] = nullptr;
 		va_end(ap);
 		return execvp(file, argv);
 	}
@@ -294,7 +294,7 @@ char *getcwd(char *buffer, size_t size) {
 	if (buffer) {
 		if (size == 0) {
 			errno = EINVAL;
-			return NULL;
+			return nullptr;
 		}
 	} else if (!buffer) {
 		if (size == 0)
@@ -306,7 +306,7 @@ char *getcwd(char *buffer, size_t size) {
 	if (mlibc::sys_getcwd) {
 		if(int e = mlibc::sys_getcwd(buffer, size); e) {
 			errno = e;
-			return NULL;
+			return nullptr;
 		}
 		return buffer;
 	}
@@ -321,7 +321,7 @@ char *getcwd(char *buffer, size_t size) {
 	                            "/", AT_SYMLINK_NOFOLLOW,
 	                            &root_stat); e) {
 		errno = e;
-		return NULL;
+		return nullptr;
 	}
 
 	struct stat cur_dir_stat;
@@ -329,14 +329,14 @@ char *getcwd(char *buffer, size_t size) {
 	                            ".", AT_SYMLINK_NOFOLLOW,
 	                            &cur_dir_stat); e) {
 		errno = e;
-		return NULL;
+		return nullptr;
 	}
 
 	if (cur_dir_stat.st_ino == root_stat.st_ino
 	 && cur_dir_stat.st_dev == root_stat.st_dev) {
 		if (size < 2) {
 			errno = ERANGE;
-			return NULL;
+			return nullptr;
 		}
 		strcpy(buffer, "/");
 		return buffer;
@@ -352,7 +352,7 @@ char *getcwd(char *buffer, size_t size) {
 		int old_par_dir = par_dir;
 		if (int e = mlibc::sys_openat(old_par_dir, "..", O_RDONLY, 0, &par_dir); e) {
 			errno = e;
-			return NULL;
+			return nullptr;
 		}
 		if (old_par_dir != AT_FDCWD) {
 			mlibc::sys_close(old_par_dir);
@@ -363,21 +363,21 @@ char *getcwd(char *buffer, size_t size) {
 		                            0, &par_dir_stat); e) {
 			mlibc::sys_close(par_dir);
 			errno = e;
-			return NULL;
+			return nullptr;
 		}
 
 		int par_dir_copy;
 		if (int e = mlibc::sys_dup(par_dir, 0, &par_dir_copy); e) {
 			mlibc::sys_close(par_dir);
 			errno = e;
-			return NULL;
+			return nullptr;
 		}
 
 		DIR *par_dir_dir = fdopendir(par_dir_copy);
-		if (par_dir_dir == NULL) {
+		if (par_dir_dir == nullptr) {
 			mlibc::sys_close(par_dir_copy);
 			mlibc::sys_close(par_dir);
-			return NULL;
+			return nullptr;
 		}
 
 		if (par_dir_stat.st_ino == root_stat.st_ino
@@ -387,10 +387,10 @@ char *getcwd(char *buffer, size_t size) {
 
 		for (;;) {
 			struct dirent *cur_ent = readdir(par_dir_dir);
-			if (cur_ent == NULL) {
+			if (cur_ent == nullptr) {
 				closedir(par_dir_dir);
 				mlibc::sys_close(par_dir);
-				return NULL;
+				return nullptr;
 			}
 
 			if (strcmp(cur_ent->d_name, ".") == 0 || strcmp(cur_ent->d_name, "..") == 0) {
@@ -404,7 +404,7 @@ char *getcwd(char *buffer, size_t size) {
 				closedir(par_dir_dir);
 				mlibc::sys_close(par_dir);
 				errno = e;
-				return NULL;
+				return nullptr;
 			}
 
 			if (cur_ent_stat.st_ino == cur_dir_stat.st_ino
@@ -414,7 +414,7 @@ char *getcwd(char *buffer, size_t size) {
 					closedir(par_dir_dir);
 					mlibc::sys_close(par_dir);
 					errno = ERANGE;
-					return NULL;
+					return nullptr;
 				}
 				bufptr -= len;
 				memcpy(&buffer[bufptr], cur_ent->d_name, len);
@@ -573,9 +573,16 @@ int lockf(int fd, int op, off_t size) {
 	return -1;
 }
 
-int nice(int) {
-	__ensure(!"Not implemented");
-	__builtin_unreachable();
+int nice(int nice) {
+	int new_nice;
+
+	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_nice, -1);
+	if(int e = mlibc::sys_nice(nice, &new_nice); e) {
+		errno = e;
+		return -1;
+	}
+
+	return new_nice;
 }
 
 long pathconf(const char *, int name) {
@@ -817,6 +824,8 @@ long sysconf(int number) {
 		case _SC_OPEN_MAX:
 			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_OPEN_MAX) returns fallback value 256\e[39m" << frg::endlog;
 			return 256;
+		case _SC_TZNAME_MAX:
+			return -1;
 		case _SC_PHYS_PAGES:
 #if __MLIBC_LINUX_OPTION
 			if(mlibc::sys_sysinfo) {
@@ -994,7 +1003,7 @@ char *getpass(const char *prompt) {
 		close(fdin);
 	}
 
-	return l < 0 ? 0 : password;
+	return l < 0 ? nullptr : password;
 }
 
 char *get_current_dir_name(void) {
@@ -1002,13 +1011,13 @@ char *get_current_dir_name(void) {
 	struct stat dotstat, pwdstat;
 
 	pwd = getenv ("PWD");
-	if(pwd != NULL && stat(".", &dotstat) == 0
+	if(pwd != nullptr && stat(".", &dotstat) == 0
 		&& stat(pwd, &pwdstat) == 0 && pwdstat.st_dev == dotstat.st_dev
 		&& pwdstat.st_ino == dotstat.st_ino)
 		/* The PWD value is correct.  Use it.  */
 		return strdup(pwd);
 
-	return getcwd((char *) NULL, 0);
+	return getcwd((char *) nullptr, 0);
 }
 
 // This is a Linux extension
@@ -1070,7 +1079,11 @@ off64_t lseek64(int fd, off64_t offset, int whence) {
 }
 
 int close(int fd) {
-	return mlibc::sys_close(fd);
+	if(int e = mlibc::sys_close(fd); e) {
+		errno = e;
+		return -1;
+	}
+	return 0;
 }
 
 unsigned int sleep(unsigned int secs) {
@@ -1279,7 +1292,7 @@ namespace {
 			user_shell_global_file = nullptr;
 		}
 	}
-}
+} // namespace
 
 char *getusershell(void) {
 	static char shell[PATH_MAX];
