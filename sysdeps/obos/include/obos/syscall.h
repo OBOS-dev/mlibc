@@ -136,6 +136,23 @@ enum {
     Sys_LinkAt,
 };
 
+#if defined(__x86_64__)
+enum {
+    SysS_SetFSBase = 0x80000000,
+    SysS_ThreadContextCreateFork,
+    SysS_ClockGet,
+    SysS_GDBStubBindInet,
+    SysS_GDBStubBindDevice,
+    SysS_GDBStubStart,
+};
+#elif defined(__m68k__)
+enum {
+    SysS_SetTCB = 0x80000000,
+    SysS_GetTCB,
+    SysS_ThreadContextCreateFork,
+};
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

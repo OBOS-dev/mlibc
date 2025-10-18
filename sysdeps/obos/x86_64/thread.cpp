@@ -9,7 +9,7 @@ namespace [[gnu::visibility("hidden")]] mlibc {
 
 int sys_tcb_set(void *pointer)
 {
-    syscall1(0x80000000 /* Sys_SetFSBase */, pointer);
+    syscall1(SysS_SetFSBase, pointer);
     return 0;
 }
 
