@@ -212,12 +212,32 @@ void sys_libc_log(char const* str)
 
 uid_t sys_getuid()
 { return (uid_t)syscall0(Sys_GetUid); }
+
 uid_t sys_geteuid()
 { return sys_getuid(); }
 
+int sys_getresuid(uid_t *ruid, uid_t *euid, uid_t *suid)
+{
+    uid_t uid = sys_getuid();
+    if (ruid) *ruid = uid;
+    if (euid) *euid = sys_geteuid();
+    if (suid) *suid = uid;
+    return 0;
+}
+
 gid_t sys_getgid()
 { return (gid_t)syscall0(Sys_GetGid); }
+
 gid_t sys_getegid() { return sys_getgid(); }
+
+int sys_getresgid(gid_t *rgid, gid_t *egid, gid_t *sgid)
+{
+    gid_t gid = sys_getgid();
+    if (rgid) *rgid = gid;
+    if (egid) *egid = sys_getegid();
+    if (sgid) *sgid = gid;
+    return 0;
+}
 
 int sys_setuid(uid_t uid)
 {
