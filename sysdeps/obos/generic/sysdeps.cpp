@@ -20,6 +20,7 @@
 #include <abi-bits/errno.h>
 #include <abi-bits/fcntl.h>
 #include <abi-bits/vm-flags.h>
+#include <abi-bits/utsname.h>
 #include <unistd.h>
 
 namespace mlibc {
@@ -50,6 +51,22 @@ int sys_sigprocmask(int how, const sigset_t *__restrict set,
         return EINVAL;
     // 'how' in oboskrnl has the same values as in Linux (the abi we "borrow" from).
     return interpret_signal_status((obos_status)syscall3(Sys_SigProcMask, how, set, retrieve));
+}
+
+int sys_uname(struct utsname* out)
+{
+    memcpy(out->sysname, "OBOS", 4);
+    sys_gethostname(out->nodename, 65);
+    memcpy(out->release, "v0.0.0", 7);
+    memcpy(out->version, "UNKNOWN", 8);
+#if defined(__x86_64__)
+    memcpy(out->machine, "x86_64", 7);
+#elif defined(__m68k__)
+    memcpy(out->machine, "m68k", 5);
+#else
+    return ENOSYS;
+#endif
+    return 0;
 }
 
 #ifndef MLIBC_BUILDING_RTLD
