@@ -569,8 +569,20 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result)
 
 int sys_pipe(int *fds, int flags)
 {
-	(void)flags;
-	return parse_file_status((obos_status)syscall2(Sys_CreatePipe, fds, 0));
+	int ec = parse_file_status((obos_status)syscall2(Sys_CreatePipe, fds, 0));
+#ifndef MLIBC_BUILDING_RTLD
+	if (ec == 0)
+	{
+    	if (flags & O_NONBLOCK)
+	    {
+            int fl = fcntl(fds[0], F_GETFL) | O_NONBLOCK;
+            fcntl(fds[0], F_SETFL, fl);
+            fl = fcntl(fds[1], F_GETFL) | O_NONBLOCK;
+            fcntl(fds[1], F_SETFL, fl);
+	    }
+    }
+#endif
+	return ec;
 }
 
 int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
