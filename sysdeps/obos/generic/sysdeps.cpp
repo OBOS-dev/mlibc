@@ -128,6 +128,12 @@ int sys_sigaltstack(const stack_t *ss, stack_t *oss)
     return interpret_signal_status((obos_status)syscall2(Sys_SigAltStack, ss, oss));
 }
 
+int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2], int flags)
+{
+    (void)(dirfd && pathname && times && flags);
+    return 0;
+}
+
 int sys_kill(pid_t pid, int sigval)
 {
     if (pid == -1)
