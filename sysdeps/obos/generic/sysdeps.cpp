@@ -124,7 +124,7 @@ int sys_mkfifoat(int dirfd, const char *path, mode_t mode)
 
 int sys_fchownat(int dirfd, const char *pathname, uid_t owner, gid_t group, int flags)
 {
-    return syscall5(Sys_FChownAt, dirfd, pathname, owner, group, flags);
+    return parse_file_status((obos_status)syscall5(Sys_FChownAt, dirfd, pathname, owner, group, flags));
 }
 
 // idk why the mlibc maintainers decided they wanted [f]chown[at] to only use one sysdep, while
@@ -140,7 +140,7 @@ int sys_fchmod(int fd, mode_t mode)
 }
 int sys_fchmodat(int fd, const char *pathname, mode_t mode, int flags)
 {
-    return syscall4(Sys_FChmodAt, fd, pathname, mode, flags);
+    return parse_file_status((obos_status)syscall4(Sys_FChmodAt, fd, pathname, mode, flags));
 }
 
 int sys_sigaltstack(const stack_t *ss, stack_t *oss)
