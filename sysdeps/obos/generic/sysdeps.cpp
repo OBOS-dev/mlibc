@@ -333,10 +333,12 @@ static int parse_pgid_status(obos_status status)
     }
 }
 
+#define HANDLE_TYPE_INVALID 0xff
+
 int sys_getpgid(pid_t pid, pid_t* pgid)
 {
     handle hnd = pid != 0 ? (handle)syscall1(Sys_ProcessOpen, pid) : HANDLE_CURRENT;
-    if (HANDLE_TYPE(hnd) == HANDLE_INVALID)
+    if (HANDLE_TYPE(hnd) == HANDLE_TYPE_INVALID)
         return ESRCH;
     int ec = parse_pgid_status((obos_status)syscall2(Sys_GetProcessGroup, hnd, pgid));
     if (hnd != HANDLE_CURRENT)
@@ -347,7 +349,7 @@ int sys_getpgid(pid_t pid, pid_t* pgid)
 int sys_setpgid(pid_t pid, pid_t pgid)
 {
     handle hnd = pid != 0 ? (handle)syscall1(Sys_ProcessOpen, pid) : HANDLE_CURRENT;
-    if (HANDLE_TYPE(hnd) == HANDLE_INVALID)
+    if (HANDLE_TYPE(hnd) == HANDLE_TYPE_INVALID)
         return ESRCH;
     int ec = parse_pgid_status((obos_status)syscall2(Sys_SetProcessGroup, hnd, pgid));
     if (hnd != HANDLE_CURRENT)
@@ -494,6 +496,15 @@ int sys_symlinkat(const char* target_path, int dirfd, const char* link_path)
     return parse_file_status((obos_status)syscall3(Sys_SymLinkAt, target_path, dirfd, link_path));
 }
 
+int sys_rename(const char *path, const char *new_path)
+{
+    return sys_renameat(AT_FDCWD, path, AT_FDCWD, new_path);
+}
+int sys_renameat(int olddirfd, const char *old_path, int newdirfd, const char *new_path)
+{
+    return parse_file_status((obos_status)syscall4(Sys_RenameAt, olddirfd, old_path, newdirfd, new_path));
+}
+
 int sys_open_dir(const char *path, int *hnd)
 {
     obos_status st = OBOS_STATUS_SUCCESS;
@@ -594,7 +605,7 @@ int sys_ioctl(int fd, unsigned long request, void *arg, int *result)
     return res;
 }
 
-int sys_pipe(int *fds, int flags)
+int sys_pipe(int *fds, [[maybe_unused]] int flags)
 {
 	int ec = parse_file_status((obos_status)syscall2(Sys_CreatePipe, fds, 0));
 #ifndef MLIBC_BUILDING_RTLD
