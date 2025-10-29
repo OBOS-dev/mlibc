@@ -136,6 +136,7 @@ enum {
     Sys_LinkAt,
     Sys_FChmodAt,
     Sys_FChownAt,
+    Sys_UMask,
 };
 
 #if defined(__x86_64__)
