@@ -122,6 +122,27 @@ int sys_mkfifoat(int dirfd, const char *path, mode_t mode)
     return parse_file_status((obos_status)syscall4(Sys_CreateNamedPipe, dirfd, path, mode, 0));
 }
 
+int sys_fchownat(int dirfd, const char *pathname, uid_t owner, gid_t group, int flags)
+{
+    return syscall5(Sys_FChownAt, dirfd, pathname, owner, group, flags);
+}
+
+// idk why the mlibc maintainers decided they wanted [f]chown[at] to only use one sysdep, while
+// [f]chmod[at] has 3 separate sysdeps
+
+int sys_chmod(const char *pathname, mode_t mode)
+{
+    return sys_fchmodat(AT_FDCWD, pathname, mode, 0);
+}
+int sys_fchmod(int fd, mode_t mode)
+{
+    return sys_fchmodat(fd, "", mode, AT_EMPTY_PATH);
+}
+int sys_fchmodat(int fd, const char *pathname, mode_t mode, int flags)
+{
+    return syscall4(Sys_FChmodAt, fd, pathname, mode, flags);
+}
+
 int sys_sigaltstack(const stack_t *ss, stack_t *oss)
 {
     // stack_t is the same on obos and on Linux (the abi we "borrow" from)

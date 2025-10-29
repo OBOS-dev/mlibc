@@ -134,6 +134,8 @@ enum {
     Sys_SetProcessGroup,
     Sys_GetProcessGroup,
     Sys_LinkAt,
+    Sys_FChmodAt,
+    Sys_FChownAt,
 };
 
 #if defined(__x86_64__)
