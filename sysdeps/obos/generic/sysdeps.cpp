@@ -149,12 +149,6 @@ int sys_sigaltstack(const stack_t *ss, stack_t *oss)
     return interpret_signal_status((obos_status)syscall2(Sys_SigAltStack, ss, oss));
 }
 
-int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2], int flags)
-{
-    (void)(dirfd && pathname && times && flags);
-    return 0;
-}
-
 int sys_kill(pid_t pid, int sigval)
 {
     if (pid == -1)
@@ -184,6 +178,11 @@ int sys_tgkill(int, int tid, int sigval)
     int err = interpret_signal_status((obos_status)syscall2(Sys_Kill, thread, sigval));
     syscall1(Sys_HandleClose, thread);
     return err;
+}
+
+int sys_utimensat(int dirfd, const char *pathname, const struct timespec times[2], int flags)
+{
+    return parse_file_status((obos_status)syscall4(Sys_UTimeNSAt, dirfd, pathname, times, flags));
 }
 
 int sys_waitpid(pid_t pid, int *status, int flags, struct rusage *ru, pid_t *ret_pid)

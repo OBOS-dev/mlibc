@@ -138,6 +138,7 @@ enum {
     Sys_FChownAt,
     Sys_UMask,
     Sys_RenameAt,
+    Sys_UTimeNSAt,
 };
 
 #if defined(__x86_64__)
