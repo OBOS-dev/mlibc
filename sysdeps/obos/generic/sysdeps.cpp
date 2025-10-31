@@ -653,7 +653,8 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
 
 int sys_umask(mode_t mode, mode_t *old)
 {
-    return syscall2(Sys_UMask, mode, old);
+    syscall2(Sys_UMask, mode, old);
+    return 0;
 }
 
 int sys_open(const char *pathname, int flags, mode_t mode, int *fd)
