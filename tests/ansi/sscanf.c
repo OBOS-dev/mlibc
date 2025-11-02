@@ -163,6 +163,17 @@ int main() {
 		free(str);
 	}
 
+	{
+		// From openjdk
+		char buf[] = "SomeOption=someValue";
+		char name[256];
+		char punct;
+		int ret = sscanf(buf, "%255[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]%c", name, &punct);
+		assert(ret == 2);
+		assert(punct == '=');
+		assert(!strcmp(name, "SomeOption"));
+	}
+
 	test_matrix();
 
 #pragma GCC diagnostic push
@@ -401,10 +412,7 @@ int main() {
 	float float_value;
 	double double_value;
 	long double long_double_value;
-	(void)float_value;
-	(void)double_value;
-	(void)long_double_value;
-	/*assert(sscanf("1.123", "%a", &float_value) == 1);
+	assert(sscanf("1.123", "%a", &float_value) == 1);
 	assert(float_value >= 1.123f - 0.01 && float_value <= 1.123f + 0.01);
 	assert(sscanf("1.123", "%la", &double_value) == 1);
 	assert(double_value >= 1.123 - 0.01 && double_value <= 1.123 + 0.01);
@@ -454,6 +462,8 @@ int main() {
 	assert(float_value >= 0x1.ABCDP3 - 0.01 && float_value <= 0x1.ABCDP3 + 0.01);
 	assert(sscanf("0x1.abcdP+3", "%f", &float_value) == 1);
 	assert(float_value >= 0x1.ABCDP3 - 0.01 && float_value <= 0x1.ABCDP3 + 0.01);
+	assert(sscanf("0x1.81c8P+13", "%f", &float_value) == 1);
+	assert(float_value >= 12345.0 - 0.01 && float_value <= 12345.0 + 0.01);
 	assert(sscanf("0x1.abcdP-3", "%f", &float_value) == 1);
 	assert(float_value >= 0x1.ABCDP-3 - 0.01 && float_value <= 0x1.ABCDP-3 + 0.01);
 	assert(sscanf("0x1.AbCdP-3", "%f", &float_value) == 1);
@@ -465,27 +475,34 @@ int main() {
 	assert(sscanf("+inf", "%f", &float_value) == 1);
 	assert(isinf(float_value));
 	assert(sscanf("-inf", "%f", &float_value) == 1);
-	assert(isinf(float_value));
+	assert(isinf(float_value) && __builtin_signbit(float_value));
 	assert(sscanf("INF", "%f", &float_value) == 1);
 	assert(isinf(float_value));
 	assert(sscanf("infinity", "%f", &float_value) == 1);
 	assert(isinf(float_value));
 	assert(sscanf("INFINITY", "%f", &float_value) == 1);
 	assert(isinf(float_value));
+	assert(sscanf("-infe", "%f", &float_value) == 1);
+	assert(isinf(float_value) && __builtin_signbit(float_value));
 	assert(sscanf("nan", "%f", &float_value) == 1);
 	assert(isnan(float_value));
 	assert(sscanf("NaN", "%f", &float_value) == 1);
 	assert(isnan(float_value));
+	assert(sscanf("naP", "%f", &float_value) == 0);
 	assert(sscanf("+nan", "%f", &float_value) == 1);
 	assert(isnan(float_value));
 	assert(sscanf("-nan", "%f", &float_value) == 1);
 	assert(isnan(float_value));
+	assert(sscanf("-nan", "%Lf", &long_double_value) == 1);
+	assert(isnan(long_double_value));
 	assert(sscanf("0xhello", "%f", &float_value) == 0);
 	assert(sscanf("0x1hello", "%f", &float_value) == 1);
 	assert(float_value >= 0x1P0f - 0.01 && float_value <= 0x1P0f + 0.01);
 	assert(sscanf("ab1.1234", "%f", &float_value) == 0);
 	assert(sscanf("  1.123", "%f", &float_value) == 1);
-	assert(float_value >= 1.123f - 0.01 && float_value <= 1.123f + 0.01);*/
+	assert(float_value >= 1.123f - 0.01 && float_value <= 1.123f + 0.01);
+	assert(sscanf(".1", "%f", &float_value) == 1);
+	assert(float_value >= .1f - 0.01 && float_value <= .1f + 0.01);
 
 	void* ptr;
 	assert(sscanf("hello", "%p", &ptr) == 0);
@@ -511,6 +528,9 @@ int main() {
 
 	assert(sscanf("aacd", "%2[ac]", char_value) == 1);
 	assert(strcmp(char_value, "aa") == 0);
+
+	assert(sscanf("zz-zxx-mmm", "%7[zx-]", char_value) == 1);
+	assert(strcmp(char_value, "zz-zxx-") == 0);
 
 	return 0;
 }
