@@ -40,6 +40,8 @@ static int interpret_signal_status(obos_status st)
     {
         case OBOS_STATUS_SUCCESS: return 0;
         case OBOS_STATUS_INVALID_ARGUMENT: return EINVAL;
+        case OBOS_STATUS_NOT_FOUND: return ESRCH;
+        case OBOS_STATUS_ACCESS_DENIED: return EPERM;
         default: return ENOSYS;
     }
 }
