@@ -139,6 +139,7 @@ enum {
     Sys_UMask,
     Sys_RenameAt,
     Sys_UTimeNSAt,
+    Sys_ThreadGetStack,
 };
 
 #if defined(__x86_64__)
