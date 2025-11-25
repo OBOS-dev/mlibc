@@ -24,9 +24,6 @@ libc_sources += files(
     host_machine.cpu_family() + '/thread.S'
 )
 
-add_project_arguments('-D_GNU_SOURCE', language: 'c')
-add_project_arguments('-D_GNU_SOURCE', language: 'cpp')
-
 if not no_headers
     install_headers(
         'include/mntent.h'
