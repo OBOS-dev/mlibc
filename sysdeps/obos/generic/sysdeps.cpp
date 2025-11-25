@@ -466,6 +466,7 @@ static int parse_file_status(obos_status status)
         case OBOS_STATUS_INVALID_IOCTL: return EINVAL;
         case OBOS_STATUS_RETRY:
         case OBOS_STATUS_TIMED_OUT: return EAGAIN;
+        case OBOS_STATUS_ABORTED: return EINTR;
         case OBOS_STATUS_INVALID_OPERATION: return EIO;
         case OBOS_STATUS_WOULD_BLOCK: return EBUSY;
         case OBOS_STATUS_PORT_IN_USE: return EADDRINUSE;
