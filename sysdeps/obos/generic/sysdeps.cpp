@@ -1139,6 +1139,43 @@ int sys_sethostname(const char *buffer, size_t bufsize)
     return parse_file_status((obos_status)syscall2(Sys_SetHostname, buffer, bufsize));
 }
 
+#if defined(__x86_64__)
+typedef __uint128_t thread_affinity;
+#elif defined(__m68k__)
+typedef uint32_t thread_affinity;
+#else
+#error typedef thread_affinity for the new port!
+#endif
+
+int sys_setaffinity(pid_t pid, size_t cpusetsize, const cpu_set_t *mask)
+{
+    return sys_setthreadaffinity(pid, cpusetsize, mask);
+}
+int sys_setthreadaffinity(pid_t tid, size_t cpusetsize, const cpu_set_t *mask)
+{
+    thread_affinity affinity = 0;
+    memcpy(&affinity, mask, frg::min(cpusetsize, sizeof(thread_affinity)));
+    handle thr = syscall1(Sys_ThreadOpen, tid);
+    int ec = parse_file_status((obos_status)syscall3(Sys_ThreadAffinity, thr, &affinity, nullptr));
+    syscall1(Sys_HandleClose, thr);
+    return ec;
+}
+
+int sys_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask)
+{
+    return sys_getthreadaffinity(pid, cpusetsize, mask);
+}
+int sys_getthreadaffinity(pid_t tid, size_t cpusetsize, cpu_set_t *mask)
+{
+    thread_affinity res = 0;
+    handle thr = syscall1(Sys_ThreadOpen, tid);
+    int ec = parse_file_status((obos_status)syscall3(Sys_ThreadAffinity, thr, nullptr, &res));
+    if (ec != 0)
+        return ec;
+    memcpy(mask, &res, frg::min(cpusetsize, sizeof(res)));
+    return 0;
+}
+
 } // namespace mlibc
 
 #ifdef __x86_64__
