@@ -259,54 +259,49 @@ uid_t sys_getuid()
 { return (uid_t)syscall0(Sys_GetUid); }
 
 uid_t sys_geteuid()
-{ return sys_getuid(); }
+{
+    uid_t res = 0;
+    sys_getresuid(nullptr, &res, nullptr);
+    return res;
+}
 
 int sys_getresuid(uid_t *ruid, uid_t *euid, uid_t *suid)
 {
-    uid_t uid = sys_getuid();
-    if (ruid) *ruid = uid;
-    if (euid) *euid = sys_geteuid();
-    if (suid) *suid = uid;
-    return 0;
+    return parse_file_status((obos_status)syscall3(Sys_GetRESUid, ruid, euid, suid));
+}
+int sys_setresuid(uid_t ruid, uid_t euid, uid_t suid)
+{
+    return parse_file_status((obos_status)syscall3(Sys_SetRESUid, ruid, euid, suid));
 }
 
 gid_t sys_getgid()
 { return (gid_t)syscall0(Sys_GetGid); }
 
-gid_t sys_getegid() { return sys_getgid(); }
+gid_t sys_getegid()
+{
+    gid_t res = 0;
+    sys_getresgid(nullptr, &res, nullptr);
+    return res;
+}
 
 int sys_getresgid(gid_t *rgid, gid_t *egid, gid_t *sgid)
-{
-    gid_t gid = sys_getgid();
-    if (rgid) *rgid = gid;
-    if (egid) *egid = sys_getegid();
-    if (sgid) *sgid = gid;
-    return 0;
-}
+{ return parse_file_status((obos_status)syscall3(Sys_GetRESGid, rgid, egid, sgid)); }
+int sys_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
+{ return parse_file_status((obos_status)syscall3(Sys_SetRESGid, rgid, egid, sgid)); }
+
+int sys_setreuid(uid_t ruid, uid_t euid)
+{ return sys_setresuid(ruid, euid, -1); }
+int sys_setregid(gid_t rgid, gid_t egid)
+{ return sys_setresgid(rgid, egid, -1); }
 
 int sys_setuid(uid_t uid)
-{
-    // This can only return OBOS_STATUS_ACCESS_DENIED
-    obos_status status = (obos_status)syscall1(Sys_SetUid, uid);
-    switch (status)
-    {
-        case OBOS_STATUS_ACCESS_DENIED: return EPERM;
-        case OBOS_STATUS_SUCCESS: return 0;
-        default: return EINVAL; // idk
-    }
-}
+{ return parse_file_status((obos_status)syscall1(Sys_SetUid, uid)); }
+int sys_seteuid(uid_t euid)
+{ return sys_setresuid(-1, euid, -1); }
 int sys_setgid(gid_t gid)
-{
-    // This can only return OBOS_STATUS_ACCESS_DENIED
-    obos_status status = (obos_status)syscall1(Sys_SetGid, gid);
-    switch (status)
-    {
-        case OBOS_STATUS_ACCESS_DENIED: return EPERM;
-        case OBOS_STATUS_SUCCESS: return 0;
-        default: return EINVAL; // idk
-    }
-    return 0;
-}
+{ return parse_file_status((obos_status)syscall1(Sys_SetGid, gid)); }
+int sys_setegid(gid_t egid)
+{ return sys_setresgid(-1, egid, -1); }
 
 pid_t sys_gettid()
 {
@@ -1173,6 +1168,15 @@ int sys_getthreadaffinity(pid_t tid, size_t cpusetsize, cpu_set_t *mask)
     if (ec != 0)
         return ec;
     memcpy(mask, &res, frg::min(cpusetsize, sizeof(res)));
+    return 0;
+}
+
+int sys_inet_configured(bool *ipv4, bool *ipv6)
+{
+    if (ipv4)
+        *ipv4 = true;
+    if (ipv6)
+        *ipv6 = false;
     return 0;
 }
 

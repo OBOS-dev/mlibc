@@ -140,6 +140,10 @@ enum {
     Sys_RenameAt,
     Sys_UTimeNSAt,
     Sys_ThreadGetStack,
+    Sys_SetRESUid,
+    Sys_SetRESGid,
+    Sys_GetRESUid,
+    Sys_GetRESGid,
 };
 
 #if defined(__x86_64__)
