@@ -2,16 +2,17 @@
 #ifndef _PTHREAD_H
 #define _PTHREAD_H
 
+#include <mlibc-config.h>
+
 #include <abi-bits/clockid_t.h>
 #include <bits/cpu_set.h>
 /* TODO: pthread is not required to define size_t. */
 #include <bits/size_t.h>
 #include <bits/posix/pthread_t.h>
 #include <bits/threads.h>
-#include <mlibc-config.h>
+#include <bits/types.h>
 
 #include <signal.h>
-#include <stdint.h>
 
 /* pthread.h is required to include sched.h and time.h */
 #include <sched.h>
@@ -20,6 +21,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define PTHREAD_NULL ((pthread_t)0)
 
 #define PTHREAD_CREATE_JOINABLE __MLIBC_THREAD_CREATE_JOINABLE
 #define PTHREAD_CREATE_DETACHED __MLIBC_THREAD_CREATE_DETACHED
@@ -63,6 +66,7 @@ extern "C" {
 #define PTHREAD_COND_INITIALIZER {0}
 #define PTHREAD_MUTEX_INITIALIZER __MLIBC_THREAD_MUTEX_INITIALIZER
 #define PTHREAD_RWLOCK_INITIALIZER {0, 0, 0}
+#define PTHREAD_SPIN_INITIALIZER {0}
 
 #define PTHREAD_CANCELED ((void*) -1)
 
@@ -78,49 +82,7 @@ extern "C" {
 
 #define PTHREAD_ATTR_NO_SIGMASK_NP (-1)
 
-/* TODO: move to own file and include in sys/types.h */
-typedef struct __mlibc_threadattr pthread_attr_t;
-
-typedef uintptr_t pthread_key_t;
-
-struct __mlibc_once {
-	unsigned int __mlibc_done;
-};
-typedef struct __mlibc_once pthread_once_t;
-
-typedef struct __mlibc_mutexattr pthread_mutexattr_t;
-
-typedef struct __mlibc_mutex pthread_mutex_t;
-
-typedef struct __mlibc_condattr pthread_condattr_t;
-
-typedef struct __mlibc_cond pthread_cond_t;
-
-struct  __mlibc_barrierattr_struct {
-	int __mlibc_pshared;
-};
-typedef struct __mlibc_barrierattr_struct pthread_barrierattr_t;
-
-struct __mlibc_barrier {
-	unsigned int __mlibc_waiting;
-	unsigned int __mlibc_inside;
-	unsigned int __mlibc_count;
-	unsigned int __mlibc_seq;
-	unsigned int __mlibc_flags;
-};
-typedef struct __mlibc_barrier pthread_barrier_t;
-
-struct __mlibc_fair_rwlock {
-	unsigned int __mlibc_m; /* Mutex. */
-	unsigned int __mlibc_rc; /* Reader count (not reference count). */
-	unsigned int __mlibc_flags;
-};
-typedef struct __mlibc_fair_rwlock pthread_rwlock_t;
-
-struct __mlibc_rwlockattr {
-	int __mlibc_pshared;
-};
-typedef struct __mlibc_rwlockattr pthread_rwlockattr_t;
+#include <bits/posix/pthread_types.h>
 
 #ifndef __MLIBC_ABI_ONLY
 
@@ -311,6 +273,15 @@ int pthread_rwlock_rdlock(pthread_rwlock_t *__rwlock);
 int pthread_rwlock_unlock(pthread_rwlock_t *__rwlock);
 
 int pthread_getcpuclockid(pthread_t __thrd, clockid_t *__clockid);
+
+/* ---------------------------------------------------------------------------- */
+/* pthread_spin functions. */
+/* ---------------------------------------------------------------------------- */
+int pthread_spin_init(pthread_spinlock_t *__lock, int __pshared);
+int pthread_spin_destroy(pthread_spinlock_t *__lock);
+int pthread_spin_lock(pthread_spinlock_t *__lock);
+int pthread_spin_trylock(pthread_spinlock_t *__lock);
+int pthread_spin_unlock(pthread_spinlock_t *__lock);
 
 #endif /* !__MLIBC_ABI_ONLY */
 

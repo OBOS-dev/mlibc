@@ -1,4 +1,13 @@
-project('mlibc', default_options: ['warning_level=2', 'c_std=gnu11', 'cpp_std=c++23'], meson_version: '>=1.3.0')
+project(
+	'mlibc',
+	default_options: [
+		'cpp_std=c++23',
+		'c_std=gnu11',
+		'buildtype=debugoptimized',
+		'warning_level=2',
+	],
+	meson_version: '>=1.3.0',
+)
 
 fs = import('fs')
 
@@ -101,11 +110,6 @@ if not headers_only
 
 		if ccdir == ''
 			error('could not find compiler-specific header directory')
-		endif
-
-		if c_compiler.get_id() == 'gcc' and fs.exists(ccdir / 'include-fixed')
-			rtld_include_dirs += include_directories(ccdir / 'include-fixed')
-			libc_include_dirs += include_directories(ccdir / 'include-fixed')
 		endif
 
 		rtld_include_dirs += include_directories(ccdir / 'include')
@@ -278,6 +282,10 @@ elif host_machine.system() == 'nyaux'
 	rtld_include_dirs += include_directories('sysdeps/nyaux/include')
 	libc_include_dirs += include_directories('sysdeps/nyaux/include')
 	subdir('sysdeps/nyaux')
+# ANCHOR: demo-sysdeps
+elif host_machine.system() == 'demo'
+	subdir('sysdeps/demo')
+# ANCHOR_END: demo-sysdeps
 else
 	error('No sysdeps defined for OS: ' + host_machine.system())
 endif
@@ -427,6 +435,7 @@ if not no_headers
 		'options/internal/include/bits/machine.h',
 		'options/internal/include/bits/mbstate.h',
 		'options/internal/include/bits/locale.h',
+		'options/internal/include/bits/locale-internals.h',
 		'options/internal/include/bits/nl_item.h',
 		'options/internal/include/bits/null.h',
 		'options/internal/include/bits/off_t.h',

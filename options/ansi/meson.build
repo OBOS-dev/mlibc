@@ -49,6 +49,9 @@ ansi_sources = files(
 	'generic/complex/catanhf.c',
 	'generic/complex/ccosf.c',
 	'generic/complex/casinh.c',
+	'generic/complex/cabsl.c',
+	'generic/complex/cargl.c',
+	'generic/complex/clogl.c',
 
 	'generic/ctype.cpp',
 	'generic/environment.cpp',
@@ -96,6 +99,7 @@ if not no_headers
 		'include/bits/ansi/timespec.h',
 		'include/bits/ansi/time_t.h',
 		'include/bits/ansi/fenv.h',
+		'include/bits/ansi/clock_t.h',
 		subdir: 'bits/ansi'
 	)
 endif

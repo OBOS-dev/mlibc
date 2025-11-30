@@ -8,11 +8,12 @@
 #include <dirent.h>
 #include <limits.h>
 #include <termios.h>
+#include <stdio.h>
 #include <pwd.h>
-#include <sys/ioctl.h>
 #include <sys/stat.h>
 
 #include <bits/ensure.h>
+#include <mlibc-config.h>
 #include <mlibc/allocator.hpp>
 #include <mlibc/arch-defs.hpp>
 #include <mlibc/debug.hpp>
@@ -22,6 +23,10 @@
 #include <mlibc/bsd-sysdeps.hpp>
 #endif
 #include <mlibc/thread.hpp>
+
+#if __MLIBC_BSD_OPTION
+#include <mlibc/bsd-sysdeps.hpp>
+#endif
 
 #if __MLIBC_LINUX_OPTION
 #include <mlibc/linux-sysdeps.hpp>
@@ -288,7 +293,9 @@ int ftruncate(int fd, off_t size) {
 	return 0;
 }
 
+#if __MLIBC_LINUX_OPTION
 [[gnu::alias("ftruncate")]] int ftruncate64(int fd, off64_t size);
+#endif /* !__MLIBC_LINUX_OPTION */
 
 char *getcwd(char *buffer, size_t size) {
 	if (buffer) {
@@ -635,7 +642,9 @@ ssize_t pread(int fd, void *buf, size_t n, off_t off) {
 	return num_read;
 }
 
+#if __MLIBC_LINUX_OPTION
 [[gnu::alias("pread")]] ssize_t pread64(int fd, void *buf, size_t n, off_t off);
+#endif /* !__MLIBC_LINUX_OPTION */
 
 ssize_t pwrite(int fd, const void *buf, size_t n, off_t off) {
 	ssize_t num_written;
@@ -648,7 +657,9 @@ ssize_t pwrite(int fd, const void *buf, size_t n, off_t off) {
 	return num_written;
 }
 
+#if __MLIBC_LINUX_OPTION
 [[gnu::alias("pwrite")]] ssize_t pwrite64(int fd, const void *buf, size_t n, off_t off);
+#endif /* !__MLIBC_LINUX_OPTION */
 
 ssize_t readlink(const char *__restrict path, char *__restrict buffer, size_t max_size) {
 	ssize_t length;
@@ -884,11 +895,9 @@ long sysconf(int number) {
 			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_NPROCESSORS_CONF) unconditionally returns fallback value 1\e[39m" << frg::endlog;
 			return 1;
 		case _SC_HOST_NAME_MAX:
-			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_HOST_NAME_MAX) unconditionally returns fallback value 256\e[39m" << frg::endlog;
-			return 256;
+			return HOST_NAME_MAX;
 		case _SC_LOGIN_NAME_MAX:
-			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_LOGIN_NAME_MAX) unconditionally returns fallback value 256\e[39m" << frg::endlog;
-			return 256;
+			return LOGIN_NAME_MAX;
 		case _SC_FSYNC:
 			return _POSIX_FSYNC;
 		case _SC_SAVED_IDS:
@@ -896,6 +905,20 @@ long sysconf(int number) {
 		case _SC_SYMLOOP_MAX:
 			mlibc::infoLogger() << "\e[31mmlibc: sysconf(_SC_SYMLOOP_MAX) unconditionally returns fallback value 8\e[39m" << frg::endlog;
 			return 8;
+		case _SC_VERSION:
+			return _POSIX_VERSION;
+		case _SC_2_VERSION:
+			return _POSIX2_VERSION;
+		case _SC_XOPEN_VERSION:
+			return _XOPEN_VERSION;
+		case _SC_MEMLOCK:
+			return _POSIX_MEMLOCK;
+		case _SC_MEMLOCK_RANGE:
+			return _POSIX_MEMLOCK_RANGE;
+		case _SC_MAPPED_FILES:
+			return _POSIX_MAPPED_FILES;
+		case _SC_SHARED_MEMORY_OBJECTS:
+			return _POSIX_SHARED_MEMORY_OBJECTS;
 		default:
 			mlibc::infoLogger() << "\e[31mmlibc: sysconf() call is not implemented, number: " << number << "\e[39m" << frg::endlog;
 			errno = EINVAL;
@@ -904,15 +927,25 @@ long sysconf(int number) {
 }
 
 pid_t tcgetpgrp(int fd) {
-	int pgrp;
-	if(ioctl(fd, TIOCGPGRP, &pgrp) < 0) {
+	int pgrp, scratch;
+	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_ioctl, -1);
+	if(int e = mlibc::sys_ioctl(fd, TIOCGPGRP, &pgrp, &scratch); e) {
+		errno = e;
 		return -1;
 	}
+
 	return pgrp;
 }
 
 int tcsetpgrp(int fd, pid_t pgrp) {
-	return ioctl(fd, TIOCSPGRP, &pgrp);
+	int scratch;
+	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_ioctl, -1);
+	if(int e = mlibc::sys_ioctl(fd, TIOCSPGRP, &pgrp, &scratch); e) {
+		errno = e;
+		return -1;
+	}
+
+	return 0;
 }
 
 int truncate(const char *, off_t) {
@@ -920,7 +953,9 @@ int truncate(const char *, off_t) {
 	__builtin_unreachable();
 }
 
+#if __MLIBC_LINUX_OPTION
 [[gnu::alias("truncate")]] int truncate64(const char *, off64_t);
+#endif /* !__MLIBC_LINUX_OPTION */
 
 char *ttyname(int fd) {
 	const size_t size = 128;
@@ -961,6 +996,10 @@ int unlinkat(int fd, const char *path, int flags) {
 
 int getpagesize() {
 	return mlibc::page_size;
+}
+
+int getdtablesize(void){
+	return sysconf(_SC_OPEN_MAX);
 }
 
 // Code taken from musl
@@ -1121,6 +1160,19 @@ int dup(int fd) {
 int dup2(int fd, int newfd) {
 	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_dup2, -1);
 	if(int e = mlibc::sys_dup2(fd, 0, newfd); e) {
+		errno = e;
+		return -1;
+	}
+	return newfd;
+}
+
+int dup3(int oldfd, int newfd, int flags) {
+	if(oldfd == newfd) {
+		errno = EINVAL;
+		return -1;
+	}
+	MLIBC_CHECK_OR_ENOSYS(mlibc::sys_dup2, -1);
+	if(int e = mlibc::sys_dup2(oldfd, flags, newfd); e) {
 		errno = e;
 		return -1;
 	}
