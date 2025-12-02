@@ -54,6 +54,10 @@ int sys_sigprocmask(int how, const sigset_t *__restrict set,
     // 'how' in oboskrnl has the same values as in Linux (the abi we "borrow" from).
     return interpret_signal_status((obos_status)syscall3(Sys_SigProcMask, how, set, retrieve));
 }
+int sys_sigpending(sigset_t *set)
+{
+    return interpret_signal_status((obos_status)syscall1(Sys_SigPending, set));
+}
 
 int sys_uname(struct utsname* out)
 {
