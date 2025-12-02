@@ -307,6 +307,20 @@ int sys_setgid(gid_t gid)
 int sys_setegid(gid_t egid)
 { return sys_setresgid(-1, egid, -1); }
 
+int sys_setgroups(size_t size, const gid_t *list)
+{
+    return parse_file_status((obos_status)syscall3(Sys_SetGroups, HANDLE_CURRENT, size, list));
+}
+int sys_getgroups(size_t size, gid_t *list, int *ret)
+{
+    if (!ret)
+        return EINVAL;
+    size_t sz_ret = size;
+    int ec = parse_file_status((obos_status)syscall3(Sys_GetGroups, HANDLE_CURRENT, &sz_ret, list));
+    *ret = (int)sz_ret;
+    return ec;
+}
+
 pid_t sys_gettid()
 {
     return (pid_t)syscall1(Sys_ThreadGetTid, HANDLE_CURRENT);

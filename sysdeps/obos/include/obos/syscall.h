@@ -145,6 +145,8 @@ enum {
     Sys_GetRESUid,
     Sys_GetRESGid,
     Sys_SigPending,
+    Sys_SetGroups,
+    Sys_GetGroups,
 };
 
 #if defined(__x86_64__)
