@@ -147,6 +147,7 @@ enum {
     Sys_SigPending,
     Sys_SetGroups,
     Sys_GetGroups,
+    Sys_GetCachedByteCount,
 };
 
 #if defined(__x86_64__)
