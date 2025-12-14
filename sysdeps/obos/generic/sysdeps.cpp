@@ -664,6 +664,9 @@ int sys_openat(int dirfd, const char *path, int flags, mode_t mode, int *fd)
         return ec;
     *fd = hnd;
 
+    if (flags & O_NONBLOCK)
+        syscall5(Sys_Fcntl, hnd, F_SETFL, &flags, 1, nullptr);
+
     return 0;
 }
 
@@ -706,6 +709,9 @@ int sys_open(const char *pathname, int flags, mode_t mode, int *fd)
     if (int ec = parse_file_status(st); ec != 0)
         return ec;
     *fd = hnd;
+
+    if (flags & O_NONBLOCK)
+        syscall5(Sys_Fcntl, hnd, F_SETFL, &flags, 1, nullptr);
 
     return 0;
 }
