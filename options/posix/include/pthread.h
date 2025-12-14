@@ -62,7 +62,7 @@ extern "C" {
 #define PTHREAD_PRIO_INHERIT __MLIBC_THREAD_PRIO_INHERIT
 #define PTHREAD_PRIO_PROTECT __MLIBC_THREAD_PRIO_PROTECT
 
-#define PTHREAD_ONCE_INIT {0}
+#define PTHREAD_ONCE_INIT __MLIBC_THREAD_ONCE_INITIALIZER
 #define PTHREAD_COND_INITIALIZER {0}
 #define PTHREAD_MUTEX_INITIALIZER __MLIBC_THREAD_MUTEX_INITIALIZER
 #define PTHREAD_RWLOCK_INITIALIZER {0, 0, 0}
@@ -73,7 +73,7 @@ extern "C" {
 #define PTHREAD_BARRIER_SERIAL_THREAD -1
 
 /* values for pthread_key */
-#define PTHREAD_DESTRUCTOR_ITERATIONS 8
+#define PTHREAD_DESTRUCTOR_ITERATIONS __MLIBC_THREAD_DESTRUCTOR_ITERATIONS
 
 #define PTHREAD_INHERIT_SCHED 0
 #define PTHREAD_EXPLICIT_SCHED 1
@@ -212,6 +212,8 @@ int pthread_mutex_lock(pthread_mutex_t *__mtx);
 int pthread_mutex_trylock(pthread_mutex_t *__mtx);
 int pthread_mutex_timedlock(pthread_mutex_t *__restrict __mtx,
 		const struct timespec *__restrict __abs_timeout);
+int pthread_mutex_clocklock(pthread_mutex_t *__restrict __mtx,
+		clockid_t __clockid, const struct timespec *__restrict __abs_timeout);
 int pthread_mutex_unlock(pthread_mutex_t *__mtx);
 
 int pthread_mutex_consistent(pthread_mutex_t *__mtx);
@@ -235,6 +237,8 @@ int pthread_cond_destroy(pthread_cond_t *__cond);
 int pthread_cond_wait(pthread_cond_t *__restrict __cond, pthread_mutex_t *__restrict __mtx);
 int pthread_cond_timedwait(pthread_cond_t *__restrict __cond, pthread_mutex_t *__restrict __mtx,
 		const struct timespec *__restrict __abs_timeout);
+int pthread_cond_clockwait(pthread_cond_t *__restrict __cond, pthread_mutex_t *__restrict __mtx,
+		clockid_t __clockid, const struct timespec *__restrict __abs_timeout);
 int pthread_cond_signal(pthread_cond_t *__cond);
 int pthread_cond_broadcast(pthread_cond_t *__cond);
 
@@ -268,8 +272,12 @@ int pthread_rwlock_init(pthread_rwlock_t *__restrict __rwlock, const pthread_rwl
 int pthread_rwlock_destroy(pthread_rwlock_t *__rwlock);
 int pthread_rwlock_trywrlock(pthread_rwlock_t *__rwlock);
 int pthread_rwlock_wrlock(pthread_rwlock_t *__rwlock);
+int pthread_rwlock_timedwrlock(pthread_rwlock_t *__rwlock, const struct timespec *__restrict __abstime);
+int pthread_rwlock_clockwrlock(pthread_rwlock_t *__rwlock, clockid_t __clockid, const struct timespec *__restrict __abstime);
 int pthread_rwlock_tryrdlock(pthread_rwlock_t *__rwlock);
 int pthread_rwlock_rdlock(pthread_rwlock_t *__rwlock);
+int pthread_rwlock_timedrdlock(pthread_rwlock_t *__rwlock, const struct timespec *__restrict __abstime);
+int pthread_rwlock_clockrdlock(pthread_rwlock_t *__rwlock, clockid_t __clockid, const struct timespec *__restrict __abstime);
 int pthread_rwlock_unlock(pthread_rwlock_t *__rwlock);
 
 int pthread_getcpuclockid(pthread_t __thrd, clockid_t *__clockid);

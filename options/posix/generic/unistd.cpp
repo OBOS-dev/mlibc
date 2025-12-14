@@ -266,13 +266,13 @@ int fdatasync(int fd) {
 }
 
 int fexecve(int, char *const [], char *const []) {
-	__ensure(!"Not implemented");
-	__builtin_unreachable();
+	mlibc::infoLogger() << "mlibc: " << __FUNCTION__ << " not implemented!" << frg::endlog;
+	return errno = ENOSYS, -1;
 }
 
 long fpathconf(int, int) {
-	__ensure(!"Not implemented");
-	__builtin_unreachable();
+	mlibc::infoLogger() << "mlibc: " << __FUNCTION__ << " not implemented!" << frg::endlog;
+	return errno = ENOSYS, -1;
 }
 
 int fsync(int fd) {
@@ -457,8 +457,8 @@ int getgroups(int size, gid_t list[]) {
 }
 
 long gethostid(void) {
-	__ensure(!"Not implemented");
-	__builtin_unreachable();
+	mlibc::infoLogger() << "mlibc: " << __FUNCTION__ << " not implemented!" << frg::endlog;
+	return errno = ENOSYS, -1;
 }
 
 int gethostname(char *buffer, size_t bufsize) {
@@ -485,8 +485,8 @@ char *getlogin(void) {
 }
 
 int getlogin_r(char *, size_t) {
-	__ensure(!"Not implemented");
-	__builtin_unreachable();
+	mlibc::infoLogger() << "mlibc: " << __FUNCTION__ << " not implemented!" << frg::endlog;
+	return errno = ENOSYS, -1;
 }
 
 int getopt(int argc, char *const argv[], const char *optstring) {
@@ -949,8 +949,8 @@ int tcsetpgrp(int fd, pid_t pgrp) {
 }
 
 int truncate(const char *, off_t) {
-	__ensure(!"Not implemented");
-	__builtin_unreachable();
+	mlibc::infoLogger() << "mlibc: " << __FUNCTION__ << " not implemented!" << frg::endlog;
+	return errno = ENOSYS, -1;
 }
 
 #if __MLIBC_LINUX_OPTION
@@ -1138,13 +1138,19 @@ unsigned int sleep(unsigned int secs) {
 
 // In contrast to sleep() this functions returns 0/-1 on success/failure.
 int usleep(useconds_t usecs) {
-	time_t seconds = 0;
-	long nanos = usecs * 1000;
+	constexpr long usec_per_sec = 1'000'000;
+
+	time_t seconds = usecs / usec_per_sec;
+	long nanos = (usecs % usec_per_sec) * 1000;
 	if(!mlibc::sys_sleep) {
 		MLIBC_MISSING_SYSDEP();
 		__ensure(!"Cannot continue without sys_sleep()");
 	}
-	return mlibc::sys_sleep(&seconds, &nanos);
+	if (int e = mlibc::sys_sleep(&seconds, &nanos); e) {
+		errno = e;
+		return -1;
+	}
+	return 0;
 }
 
 int dup(int fd) {
