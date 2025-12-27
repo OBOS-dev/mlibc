@@ -1083,9 +1083,10 @@ int sys_listen(int fd, int backlog)
 int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_length, int flags)
 {
     *newfd = syscall0(Sys_FdAlloc);
-    size_t saddr_klength = *addr_length;
-    int ec = parse_file_status((obos_status)syscall5(Sys_Accept, fd, *newfd, addr_ptr, &saddr_klength, flags));
-    *addr_length = saddr_klength;
+    size_t saddr_klength = addr_length ? *addr_length : 0;
+    int ec = parse_file_status((obos_status)syscall5(Sys_Accept, fd, *newfd, addr_ptr, addr_length ? &saddr_klength : nullptr, flags));
+    if (addr_length)
+        *addr_length = saddr_klength;
     if (ec)
         syscall1(Sys_HandleClose, *newfd);
     return ec;
