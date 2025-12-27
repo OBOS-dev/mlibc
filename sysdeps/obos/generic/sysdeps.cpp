@@ -1087,7 +1087,7 @@ int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_le
 {
     *newfd = syscall0(Sys_FdAlloc);
     size_t saddr_klength = addr_length ? *addr_length : 0;
-    int ec = parse_file_status((obos_status)syscall5(Sys_Accept, fd, *newfd, addr_ptr, addr_length ? &saddr_klength : nullptr`, flags));
+    int ec = parse_file_status((obos_status)syscall5(Sys_Accept, fd, *newfd, addr_ptr, addr_length ? &saddr_klength : nullptr, flags));
     if (addr_length)
         *addr_length = saddr_klength;
     if (ec)
