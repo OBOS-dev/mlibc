@@ -1035,8 +1035,10 @@ struct sys_socket_io_params {
     };
     // Untouched in sendto, modified in recvfrom
     size_t addr_length;
-    // Only valid in recvfrom
-    size_t nRead;
+    union {
+        size_t nRead;
+        size_t nWritten;
+    };
 };
 
 int sys_socket(int family, int type, int protocol, int *fd)
@@ -1053,11 +1055,12 @@ ssize_t sys_sendto(int fd, const void *buffer, size_t size, int flags, const str
     struct sys_socket_io_params params = {
         .csock_addr = sock_addr,
         .addr_length = addr_length,
-        .nRead = 0
+        .nWritten = 0
     };
+    int ec = parse_file_status((obos_status)syscall5(Sys_SendTo, fd, buffer, size, flags, &params));
     if (length)
-        *length = size;
-    return parse_file_status((obos_status)syscall5(Sys_SendTo, fd, buffer, size, flags, &params));
+        *length = params.nWritten;
+    return ec;
 }
 
 ssize_t sys_recvfrom(int fd, void *buffer, size_t size, int flags, struct sockaddr *sock_addr, socklen_t *addr_length, ssize_t *length)
@@ -1084,7 +1087,7 @@ int sys_accept(int fd, int *newfd, struct sockaddr *addr_ptr, socklen_t *addr_le
 {
     *newfd = syscall0(Sys_FdAlloc);
     size_t saddr_klength = addr_length ? *addr_length : 0;
-    int ec = parse_file_status((obos_status)syscall5(Sys_Accept, fd, *newfd, addr_ptr, addr_length ? &saddr_klength : nullptr, flags));
+    int ec = parse_file_status((obos_status)syscall5(Sys_Accept, fd, *newfd, addr_ptr, addr_length ? &saddr_klength : nullptr`, flags));
     if (addr_length)
         *addr_length = saddr_klength;
     if (ec)
